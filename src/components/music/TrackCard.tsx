@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ export interface Track {
   artist: string;
   label?: string;
   releaseDate?: string;
+  imageQuery?: string;
 }
 
 interface TrackCardProps {
@@ -16,9 +18,21 @@ interface TrackCardProps {
 }
 
 export function TrackCard({ track, className }: TrackCardProps) {
+  const imageUrl = `https://api.webnative.dev/images?query=${encodeURIComponent(track.imageQuery || track.title)}`;
+  
   return (
-    <Card className={cn("w-full h-40 flex flex-col hover:shadow-lg transition-shadow", className)}>
-      <CardContent className="p-4 flex flex-col justify-between h-full">
+    <Card className={cn("w-full h-64 flex flex-col hover:shadow-lg transition-shadow", className)}>
+      <div className="relative h-32 w-full overflow-hidden rounded-t-xl">
+        <Image
+          src={imageUrl}
+          alt={`Cover art for ${track.title}`}
+          className="object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={false}
+        />
+      </div>
+      <CardContent className="p-4 flex flex-col justify-between h-full flex-grow">
         <div>
           <CardTitle className="text-lg mb-2 line-clamp-2">{track.title}</CardTitle>
           <p className="text-sm text-muted-foreground">{track.artist}</p>

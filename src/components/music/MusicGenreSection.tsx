@@ -25,9 +25,9 @@ export function MusicGenreSection({ title, tracks, className }: MusicGenreSectio
         }}
         className="w-full"
       >
-        <CarouselContent>
+        <CarouselContent className="-ml-4">
           {tracks.map((track) => (
-            <CarouselItem key={track.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            <CarouselItem key={track.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
               <TrackCard track={track} />
             </CarouselItem>
           ))}

@@ -80,6 +80,23 @@ const generateTracks = (genre: string): Track[] => {
     "Frequency Makers",
   ];
 
+  // Generate appropriate image queries based on genre and track name
+  const getImageQuery = (name: string, genre: string): string => {
+    // Combine genre with descriptive terms to get better images
+    const genrePrefix = genre.replace(" House", "").replace("Indie Dance", "electronic");
+
+    // For specific track names, create more targeted queries
+    if (name.includes("Ocean") || name.includes("Submerged")) return `underwater ${genrePrefix} music`;
+    if (name.includes("Midnight") || name.includes("Night")) return `night club ${genrePrefix} music`;
+    if (name.includes("Disco")) return `disco ball ${genrePrefix} music`;
+    if (name.includes("Vintage") || name.includes("Classic")) return `vintage vinyl ${genrePrefix}`;
+    if (name.includes("Chicago")) return `chicago house music club`;
+    if (name.includes("Electric") || name.includes("Synth")) return `synthesizer ${genrePrefix} music`;
+
+    // Default query combines the track name with the genre for relevance
+    return `${name} ${genrePrefix} music`;
+  };
+
   const names = baseNames[genre] || baseNames["Tech House"];
 
   return names.map((name, index) => ({
@@ -88,6 +105,7 @@ const generateTracks = (genre: string): Track[] => {
     artist: artists[index % artists.length],
     label: labels[index % labels.length],
     releaseDate: `${2024 - (index % 3)}`,
+    imageQuery: getImageQuery(name, genre),
   }));
 };
 
