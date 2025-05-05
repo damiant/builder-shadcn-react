@@ -17,7 +17,7 @@ interface MusicGenreSectionProps {
 export function MusicGenreSection({ title, tracks, className }: MusicGenreSectionProps) {
   return (
     <section className={className}>
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <h2 className="text-2xl font-bold mb-4 font-[family-name:var(--font-permanent-marker)]">{title}</h2>
       <Carousel
         opts={{
           align: "start",
