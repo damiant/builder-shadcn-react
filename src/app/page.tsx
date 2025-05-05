@@ -119,7 +119,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="relative py-16 px-6 md:px-12 lg:px-24 text-center mb-6 bg-gradient-to-r from-primary/10 to-primary/5">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">House Music</h1>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 font-[family-name:var(--font-molle)]">House Music</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Explore the finest selection of house music tracks across different subgenres
         </p>
