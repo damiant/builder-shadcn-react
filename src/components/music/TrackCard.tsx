@@ -20,10 +20,10 @@ interface TrackCardProps {
 export function TrackCard({ track, className }: TrackCardProps) {
   const imageUrl = `https://api.webnative.dev/images?query=${encodeURIComponent(track.imageQuery || track.title)}`;
   const [imgError, setImgError] = React.useState(false);
-
+  
   return (
     <Card className={cn("w-full h-64 flex flex-col hover:shadow-lg transition-shadow", className)}>
-      <div className="relative h-32 w-full overflow-hidden rounded-t-xl bg-muted/30">
+      <div className="relative h-[192px] w-full overflow-hidden rounded-t-xl bg-muted/30">
         {!imgError ? (
           <Image
             src={imageUrl}
@@ -40,14 +40,14 @@ export function TrackCard({ track, className }: TrackCardProps) {
           </div>
         )}
       </div>
-      <CardContent className="p-4 flex flex-col justify-between h-full flex-grow">
-        <div>
-          <CardTitle className="text-lg mb-2 line-clamp-2">{track.title}</CardTitle>
-          <p className="text-sm text-muted-foreground">{track.artist}</p>
+      <CardContent className="p-3 flex-grow h-[64px] flex flex-col justify-between">
+        <div className="overflow-hidden">
+          <CardTitle className="text-sm font-semibold mb-0.5 truncate">{track.title}</CardTitle>
+          <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
         </div>
         {track.label && (
           <div className="mt-auto">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               {track.label} {track.releaseDate && `· ${track.releaseDate}`}
             </p>
           </div>
