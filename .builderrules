@@ -1,0 +1,4 @@
+# .builderrules (see https://www.builder.io/c/docs/cli-code-generation-best-practices#project-level-settings)
+
+Whenever using a component you MUST use a shadcn component rather than creating a component. These shadcn components are installed in the project:
+- accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, dialog, drawer, dropdown-menu, form, hover-card, label, navigation-menu, progress, radio-group, resizable, select, separator, sheet, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip.
