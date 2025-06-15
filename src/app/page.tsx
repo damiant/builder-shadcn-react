@@ -83,15 +83,21 @@ const generateTracks = (genre: string): Track[] => {
   // Generate appropriate image queries based on genre and track name
   const getImageQuery = (name: string, genre: string): string => {
     // Combine genre with descriptive terms to get better images
-    const genrePrefix = genre.replace(" House", "").replace("Indie Dance", "electronic");
+    const genrePrefix = genre
+      .replace(" House", "")
+      .replace("Indie Dance", "electronic");
 
     // For specific track names, create more targeted queries
-    if (name.includes("Ocean") || name.includes("Submerged")) return `underwater ${genrePrefix} music`;
-    if (name.includes("Midnight") || name.includes("Night")) return `night club ${genrePrefix} music`;
+    if (name.includes("Ocean") || name.includes("Submerged"))
+      return `underwater ${genrePrefix} music`;
+    if (name.includes("Midnight") || name.includes("Night"))
+      return `night club ${genrePrefix} music`;
     if (name.includes("Disco")) return `disco ball ${genrePrefix} music`;
-    if (name.includes("Vintage") || name.includes("Classic")) return `vintage vinyl ${genrePrefix}`;
+    if (name.includes("Vintage") || name.includes("Classic"))
+      return `vintage vinyl ${genrePrefix}`;
     if (name.includes("Chicago")) return `chicago house music club`;
-    if (name.includes("Electric") || name.includes("Synth")) return `synthesizer ${genrePrefix} music`;
+    if (name.includes("Electric") || name.includes("Synth"))
+      return `synthesizer ${genrePrefix} music`;
 
     // Default query combines the track name with the genre for relevance
     return `${name} ${genrePrefix} music`;
@@ -119,9 +125,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="relative py-16 px-6 md:px-12 lg:px-24 text-center mb-6 bg-gradient-to-r from-red-600 via-orange-500 to-amber-500">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 font-[family-name:var(--font-molle)] text-white drop-shadow-md">House Music</h1>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 font-[family-name:var(--font-molle)] text-white drop-shadow-md">
+          House Music
+        </h1>
         <p className="text-lg max-w-2xl mx-auto text-white/90">
-          Explore the finest selection of house music tracks across different subgenres
+          Explore the finest selection of house music tracks across different
+          subgenres
         </p>
       </header>
 
@@ -135,7 +144,10 @@ export default function Home() {
 
       <footer className="py-8 bg-muted text-center text-sm text-muted-foreground">
         <div className="container mx-auto">
-          <p>© {new Date().getFullYear()} House Music Collection. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} House Music Collection. All rights
+            reserved.
+          </p>
         </div>
       </footer>
     </div>
