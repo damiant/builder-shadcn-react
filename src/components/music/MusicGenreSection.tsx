@@ -14,10 +14,16 @@ interface MusicGenreSectionProps {
   className?: string;
 }
 
-export function MusicGenreSection({ title, tracks, className }: MusicGenreSectionProps) {
+export function MusicGenreSection({
+  title,
+  tracks,
+  className,
+}: MusicGenreSectionProps) {
   return (
     <section className={className}>
-      <h2 className="text-2xl font-bold mb-4 font-[family-name:var(--font-permanent-marker)]">{title}</h2>
+      <h2 className="text-[33px] font-bold mb-4 font-[family-name:var(--font-permanent-marker)]">
+        {title}
+      </h2>
       <Carousel
         opts={{
           align: "start",
@@ -27,7 +33,10 @@ export function MusicGenreSection({ title, tracks, className }: MusicGenreSectio
       >
         <CarouselContent className="-ml-4">
           {tracks.map((track) => (
-            <CarouselItem key={track.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            <CarouselItem
+              key={track.id}
+              className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+            >
               <TrackCard track={track} />
             </CarouselItem>
           ))}
