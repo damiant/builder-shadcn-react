@@ -1,0 +1,309 @@
+[
+  {
+    "name": "Accordion",
+    "description": "Use this component group to generate accordion functionality with required hierarchical structure",
+    "components": [
+      "Accordion",
+      "AccordionItem",
+      "AccordionTrigger",
+      "AccordionContent"
+    ],
+    "relevantFiles": ["src/components/ui/accordion.tsx"]
+  },
+  {
+    "name": "AlertDialog",
+    "description": "Use this component group to generate alert dialog functionality with required compositional structure",
+    "components": [
+      "AlertDialog",
+      "AlertDialogTrigger",
+      "AlertDialogContent",
+      "AlertDialogHeader",
+      "AlertDialogFooter",
+      "AlertDialogTitle",
+      "AlertDialogDescription",
+      "AlertDialogAction",
+      "AlertDialogCancel",
+      "AlertDialogPortal",
+      "AlertDialogOverlay"
+    ],
+    "relevantFiles": ["src/components/ui/alert-dialog.tsx"]
+  },
+  {
+    "name": "Card",
+    "description": "Use this component group to generate card components with structured layout parts",
+    "components": [
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "CardDescription",
+      "CardAction",
+      "CardContent",
+      "CardFooter"
+    ],
+    "relevantFiles": ["src/components/ui/card.tsx"]
+  },
+  {
+    "name": "Carousel",
+    "description": "Use this component group to generate carousel functionality with required context and structure",
+    "components": [
+      "Carousel",
+      "CarouselContent",
+      "CarouselItem",
+      "CarouselPrevious",
+      "CarouselNext"
+    ],
+    "relevantFiles": ["src/components/ui/carousel.tsx"]
+  },
+  {
+    "name": "Chart",
+    "description": "Use this component group to generate chart functionality with required context and shared components",
+    "components": [
+      "ChartContainer",
+      "ChartTooltip",
+      "ChartTooltipContent",
+      "ChartLegend",
+      "ChartLegendContent",
+      "ChartStyle"
+    ],
+    "relevantFiles": ["src/components/ui/chart.tsx"]
+  },
+  {
+    "name": "Form",
+    "description": "Use this component group to generate form components with required shared context",
+    "components": [
+      "Form",
+      "FormField",
+      "FormItem",
+      "FormLabel",
+      "FormControl",
+      "FormDescription",
+      "FormMessage"
+    ],
+    "relevantFiles": ["src/components/ui/form.tsx"]
+  },
+  {
+    "name": "NavigationMenu",
+    "description": "Use this component group to generate navigation menu with required hierarchical structure",
+    "components": [
+      "NavigationMenu",
+      "NavigationMenuList",
+      "NavigationMenuItem",
+      "NavigationMenuContent",
+      "NavigationMenuTrigger",
+      "NavigationMenuLink",
+      "NavigationMenuIndicator",
+      "NavigationMenuViewport"
+    ],
+    "relevantFiles": ["src/components/ui/navigation-menu.tsx"]
+  },
+  {
+    "name": "RadioGroup",
+    "description": "Use this component group to generate radio group functionality with required parent-child relationship",
+    "components": ["RadioGroup", "RadioGroupItem"],
+    "relevantFiles": ["src/components/ui/radio-group.tsx"]
+  },
+  {
+    "name": "Table",
+    "description": "Use this component group to generate table functionality with required hierarchical structure",
+    "components": [
+      "Table",
+      "TableHeader",
+      "TableBody",
+      "TableFooter",
+      "TableHead",
+      "TableRow",
+      "TableCell",
+      "TableCaption"
+    ],
+    "relevantFiles": ["src/components/ui/table.tsx"]
+  },
+  {
+    "name": "ToggleGroup",
+    "description": "Use this component group to generate toggle group functionality with required context sharing",
+    "components": ["ToggleGroup", "ToggleGroupItem"],
+    "relevantFiles": [
+      "src/components/ui/toggle-group.tsx",
+      "src/components/ui/toggle.tsx"
+    ]
+  },
+  {
+    "name": "Alert",
+    "description": "Use this component to generate alert functionality",
+    "components": ["Alert"],
+    "relevantFiles": ["src/components/ui/alert.tsx"]
+  },
+  {
+    "name": "AspectRatio",
+    "description": "Use this component to generate aspect ratio containers",
+    "components": ["AspectRatio"],
+    "relevantFiles": ["src/components/ui/aspect-ratio.tsx"]
+  },
+  {
+    "name": "Avatar",
+    "description": "Use this component to generate avatar functionality",
+    "components": ["Avatar"],
+    "relevantFiles": ["src/components/ui/avatar.tsx"]
+  },
+  {
+    "name": "Badge",
+    "description": "Use this component to generate badge functionality",
+    "components": ["Badge"],
+    "relevantFiles": ["src/components/ui/badge.tsx"]
+  },
+  {
+    "name": "Breadcrumb",
+    "description": "Use this component to generate breadcrumb navigation",
+    "components": ["Breadcrumb"],
+    "relevantFiles": ["src/components/ui/breadcrumb.tsx"]
+  },
+  {
+    "name": "Button",
+    "description": "Use this component to generate button functionality",
+    "components": ["Button"],
+    "relevantFiles": ["src/components/ui/button.tsx"]
+  },
+  {
+    "name": "Calendar",
+    "description": "Use this component to generate calendar functionality",
+    "components": ["Calendar"],
+    "relevantFiles": ["src/components/ui/calendar.tsx"]
+  },
+  {
+    "name": "Checkbox",
+    "description": "Use this component to generate checkbox functionality",
+    "components": ["Checkbox"],
+    "relevantFiles": ["src/components/ui/checkbox.tsx"]
+  },
+  {
+    "name": "Collapsible",
+    "description": "Use this component to generate collapsible functionality",
+    "components": ["Collapsible"],
+    "relevantFiles": ["src/components/ui/collapsible.tsx"]
+  },
+  {
+    "name": "Command",
+    "description": "Use this component to generate command palette functionality",
+    "components": ["Command"],
+    "relevantFiles": ["src/components/ui/command.tsx"]
+  },
+  {
+    "name": "ContextMenu",
+    "description": "Use this component to generate context menu functionality",
+    "components": ["ContextMenu"],
+    "relevantFiles": ["src/components/ui/context-menu.tsx"]
+  },
+  {
+    "name": "Dialog",
+    "description": "Use this component to generate dialog functionality",
+    "components": ["Dialog"],
+    "relevantFiles": ["src/components/ui/dialog.tsx"]
+  },
+  {
+    "name": "Drawer",
+    "description": "Use this component to generate drawer functionality",
+    "components": ["Drawer"],
+    "relevantFiles": ["src/components/ui/drawer.tsx"]
+  },
+  {
+    "name": "DropdownMenu",
+    "description": "Use this component to generate dropdown menu functionality",
+    "components": ["DropdownMenu"],
+    "relevantFiles": ["src/components/ui/dropdown-menu.tsx"]
+  },
+  {
+    "name": "HoverCard",
+    "description": "Use this component to generate hover card functionality",
+    "components": ["HoverCard"],
+    "relevantFiles": ["src/components/ui/hover-card.tsx"]
+  },
+  {
+    "name": "Label",
+    "description": "Use this component to generate label functionality",
+    "components": ["Label"],
+    "relevantFiles": ["src/components/ui/label.tsx"]
+  },
+  {
+    "name": "Progress",
+    "description": "Use this component to generate progress bar functionality",
+    "components": ["Progress"],
+    "relevantFiles": ["src/components/ui/progress.tsx"]
+  },
+  {
+    "name": "Resizable",
+    "description": "Use this component to generate resizable panel functionality",
+    "components": ["Resizable"],
+    "relevantFiles": ["src/components/ui/resizable.tsx"]
+  },
+  {
+    "name": "Select",
+    "description": "Use this component to generate select dropdown functionality",
+    "components": ["Select"],
+    "relevantFiles": ["src/components/ui/select.tsx"]
+  },
+  {
+    "name": "Separator",
+    "description": "Use this component to generate separator lines",
+    "components": ["Separator"],
+    "relevantFiles": ["src/components/ui/separator.tsx"]
+  },
+  {
+    "name": "Sheet",
+    "description": "Use this component to generate sheet/slide-out functionality",
+    "components": ["Sheet"],
+    "relevantFiles": ["src/components/ui/sheet.tsx"]
+  },
+  {
+    "name": "Slider",
+    "description": "Use this component to generate slider functionality",
+    "components": ["Slider"],
+    "relevantFiles": ["src/components/ui/slider.tsx"]
+  },
+  {
+    "name": "Sonner",
+    "description": "Use this component to generate toast notifications",
+    "components": ["Sonner"],
+    "relevantFiles": ["src/components/ui/sonner.tsx"]
+  },
+  {
+    "name": "Switch",
+    "description": "Use this component to generate switch toggle functionality",
+    "components": ["Switch"],
+    "relevantFiles": ["src/components/ui/switch.tsx"]
+  },
+  {
+    "name": "Tabs",
+    "description": "Use this component to generate tabs functionality",
+    "components": ["Tabs"],
+    "relevantFiles": ["src/components/ui/tabs.tsx"]
+  },
+  {
+    "name": "Textarea",
+    "description": "Use this component to generate textarea functionality",
+    "components": ["Textarea"],
+    "relevantFiles": ["src/components/ui/textarea.tsx"]
+  },
+  {
+    "name": "Toggle",
+    "description": "Use this component to generate toggle button functionality",
+    "components": ["Toggle"],
+    "relevantFiles": ["src/components/ui/toggle.tsx"]
+  },
+  {
+    "name": "Tooltip",
+    "description": "Use this component to generate tooltip functionality",
+    "components": ["Tooltip"],
+    "relevantFiles": ["src/components/ui/tooltip.tsx"]
+  },
+  {
+    "name": "TrackCard",
+    "description": "Use this component to generate music track card functionality",
+    "components": ["TrackCard"],
+    "relevantFiles": ["src/components/music/TrackCard.tsx"]
+  },
+  {
+    "name": "MusicGenreSection",
+    "description": "Use this component to generate music genre section with carousel layout",
+    "components": ["MusicGenreSection"],
+    "relevantFiles": ["src/components/music/MusicGenreSection.tsx"]
+  }
+]

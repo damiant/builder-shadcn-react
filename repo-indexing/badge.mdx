@@ -1,0 +1,317 @@
+# Badge Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate badge functionality for displaying small labels, status indicators, counts, or metadata tags that provide contextual information about content.
+
+### When to Use
+
+- **Status indicators**: Show the state of items (active, inactive, pending, completed)
+- **Category labels**: Tag content with categories or types
+- **Count badges**: Display numbers like notification counts or item quantities
+- **Metadata tags**: Show additional information like version numbers, priority levels, or content types
+- **Interactive labels**: Create clickable tags when used with the `asChild` pattern
+- **Content organization**: Help users quickly identify and categorize information
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently without requiring other components. It provides a self-contained badge interface with variant support and accessibility features.
+
+### Component Interdependencies
+
+None - Badge is a standalone component that operates independently.
+
+## Components
+
+### Badge {Standalone Component}
+
+**Purpose:** A versatile label component for displaying concise information with various visual styles and semantic meanings.
+
+**Interface:**
+
+```typescript
+interface BadgeProps
+  extends React.ComponentProps<"span">,
+    VariantProps<typeof badgeVariants> {
+  variant?: "default" | "secondary" | "destructive" | "outline";
+  asChild?: boolean;
+  className?: string;
+}
+```
+
+**Key Features:**
+
+- **Variant system**: Four built-in visual styles for different semantic meanings
+- **asChild pattern**: Can render as any element via Radix Slot
+- **Accessibility**: Built-in focus states and ARIA support
+- **Responsive design**: Adapts to content and container constraints
+- **Icon support**: Optimized for including small icons alongside text
+
+**Usage Example:**
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+
+function Example() {
+  return (
+    <div className="flex gap-2">
+      <Badge>Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="destructive">Error</Badge>
+      <Badge variant="outline">Outline</Badge>
+    </div>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Status Indicators
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+
+function StatusIndicators() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span>Server Status:</span>
+        <Badge variant="default">Active</Badge>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span>Build Status:</span>
+        <Badge variant="destructive">Failed</Badge>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span>Environment:</span>
+        <Badge variant="secondary">Development</Badge>
+      </div>
+    </div>
+  );
+}
+```
+
+### Count and Notification Badges
+
+```tsx
+function NotificationBadges() {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative">
+        <button className="p-2">Messages</button>
+        <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs">
+          3
+        </Badge>
+      </div>
+
+      <Badge variant="outline">{itemCount} items</Badge>
+    </div>
+  );
+}
+```
+
+### Interactive Badges with asChild
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+
+function InteractiveBadges() {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Badge asChild variant="outline">
+        <button onClick={() => filterByTag("react")}>React</button>
+      </Badge>
+
+      <Badge asChild variant="secondary">
+        <a href="/category/javascript">JavaScript</a>
+      </Badge>
+
+      <Badge asChild>
+        <button onClick={() => removeTag("typescript")}>TypeScript ×</button>
+      </Badge>
+    </div>
+  );
+}
+```
+
+### Content Tagging
+
+```tsx
+function ContentTags() {
+  const tags = ["TypeScript", "React", "Next.js", "TailwindCSS"];
+
+  return (
+    <article className="space-y-4">
+      <h2>Building Modern Web Applications</h2>
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <Badge key={tag} variant="secondary">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+      <p>Article content...</p>
+    </article>
+  );
+}
+```
+
+### With Icons
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, AlertCircle, Clock, X } from "lucide-react";
+
+function IconBadges() {
+  return (
+    <div className="space-y-2">
+      <Badge variant="default" className="gap-1">
+        <CheckCircle className="h-3 w-3" />
+        Completed
+      </Badge>
+
+      <Badge variant="destructive" className="gap-1">
+        <AlertCircle className="h-3 w-3" />
+        Error
+      </Badge>
+
+      <Badge variant="secondary" className="gap-1">
+        <Clock className="h-3 w-3" />
+        Pending
+      </Badge>
+
+      <Badge variant="outline" className="gap-1">
+        Draft
+        <X className="h-3 w-3" />
+      </Badge>
+    </div>
+  );
+}
+```
+
+## Variant Guide
+
+### Default
+
+- **Use for**: Primary status, active states, positive indicators
+- **Visual style**: Primary color background with contrasting text
+- **Semantic meaning**: Default or primary importance
+
+### Secondary
+
+- **Use for**: Supporting information, neutral states, categories
+- **Visual style**: Secondary color background, less prominent than default
+- **Semantic meaning**: Secondary importance or neutral information
+
+### Destructive
+
+- **Use for**: Errors, warnings, negative states, dangerous actions
+- **Visual style**: Red/destructive color background with white text
+- **Semantic meaning**: Attention required, problematic states
+
+### Outline
+
+- **Use for**: Subtle indicators, inactive states, optional information
+- **Visual style**: Transparent background with border, inherits text color
+- **Semantic meaning**: Less important or inactive information
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Choose variants semantically**: Use variant colors that match the meaning of your content (destructive for errors, secondary for neutral info)
+- **Keep text concise**: Badges work best with short, descriptive labels (1-3 words)
+- **Use consistent sizing**: Stick to the default size for most use cases, only customize when necessary for design consistency
+- **Group related badges**: When showing multiple badges, organize them logically and maintain consistent spacing
+
+### Accessibility
+
+- **Semantic HTML**: Badge renders as a `span` by default, use `asChild` with appropriate elements for interactive badges
+- **Color independence**: Don't rely solely on color to convey meaning; include text or icons
+- **Focus states**: Interactive badges (using `asChild` with buttons/links) include visible focus indicators
+- **ARIA support**: Use `aria-label` for count badges or when the badge meaning isn't clear from text alone
+
+### Performance
+
+- **Static content**: For large lists with badges, consider memoization if badges don't change frequently
+- **Icon optimization**: When using icons, ensure they're properly optimized and use appropriate sizes
+- **CSS-in-JS**: The component uses CSS variables for theming, allowing for efficient style updates
+
+## Common Patterns
+
+### Pattern 1: Dynamic Status Badge
+
+```tsx
+function DynamicStatusBadge({
+  status,
+}: {
+  status: "active" | "inactive" | "error";
+}) {
+  const badgeConfig = {
+    active: { variant: "default" as const, text: "Active" },
+    inactive: { variant: "secondary" as const, text: "Inactive" },
+    error: { variant: "destructive" as const, text: "Error" },
+  };
+
+  const config = badgeConfig[status];
+
+  return <Badge variant={config.variant}>{config.text}</Badge>;
+}
+```
+
+### Pattern 2: Removable Tag Badge
+
+```tsx
+function RemovableTag({
+  tag,
+  onRemove,
+}: {
+  tag: string;
+  onRemove: (tag: string) => void;
+}) {
+  return (
+    <Badge variant="outline" className="gap-1 pr-1">
+      {tag}
+      <button
+        onClick={() => onRemove(tag)}
+        className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground"
+        aria-label={`Remove ${tag} tag`}
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
+  );
+}
+```
+
+### Pattern 3: Priority Level Badge
+
+```tsx
+function PriorityBadge({
+  priority,
+}: {
+  priority: "low" | "medium" | "high" | "urgent";
+}) {
+  const priorityStyles = {
+    low: {
+      variant: "outline" as const,
+      className: "text-green-600 border-green-200",
+    },
+    medium: { variant: "secondary" as const, className: "" },
+    high: { variant: "default" as const, className: "bg-orange-500" },
+    urgent: { variant: "destructive" as const, className: "" },
+  };
+
+  const style = priorityStyles[priority];
+
+  return (
+    <Badge variant={style.variant} className={style.className}>
+      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+    </Badge>
+  );
+}
+```

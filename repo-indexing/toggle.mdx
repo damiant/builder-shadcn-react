@@ -1,0 +1,727 @@
+# Toggle Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate toggle button functionality
+
+### When to Use
+
+The Toggle component is ideal for binary state controls where users need to switch between two states (on/off, enabled/disabled, active/inactive). Use Toggle when:
+
+- **Feature Toggles**: Enabling or disabling specific features or functionalities
+- **Setting Controls**: Binary preference settings like "Show notifications" or "Dark mode"
+- **Filter States**: Simple on/off filter controls that don't need grouping
+- **Interactive States**: Bookmarking, favoriting, or following actions
+- **View Modes**: Switching between two specific view states
+- **Selection States**: Marking items as selected or deselected
+- **Binary Preferences**: Any scenario requiring a clear on/off state with visual feedback
+
+### Architecture
+
+**No Coupling**: The Toggle component is a standalone component that can be used independently without requiring other components. It provides a consistent interface for binary state controls across the application with built-in accessibility and visual feedback.
+
+## Components
+
+### Toggle {Standalone Component}
+
+A standalone toggle button component that manages binary state with visual feedback and accessibility features.
+
+**Purpose:** Creates accessible, styled toggle buttons with consistent behavior and appearance for binary state controls. Supports both controlled and uncontrolled usage patterns.
+
+**Interface:**
+
+```typescript
+interface ToggleProps
+  extends React.ComponentProps<typeof TogglePrimitive.Root>,
+    VariantProps<typeof toggleVariants> {
+  className?: string;
+  variant?: "default" | "outline"; // Visual style variant
+  size?: "default" | "sm" | "lg"; // Size variant
+  children: React.ReactNode; // Content of the toggle (text, icons, etc.)
+  pressed?: boolean; // Controlled pressed state
+  defaultPressed?: boolean; // Initial pressed state for uncontrolled usage
+  onPressedChange?: (pressed: boolean) => void; // Callback when pressed state changes
+  disabled?: boolean; // Disables the toggle button
+  asChild?: boolean; // Polymorphic rendering capability
+  "aria-label"?: string; // Accessibility label, especially important for icon-only toggles
+}
+```
+
+**Usage Example:**
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+
+function BasicToggle() {
+  return (
+    <Toggle aria-label="Toggle italic">
+      <Italic className="h-4 w-4" />
+    </Toggle>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+
+// Uncontrolled toggle with default state
+function BasicToggleExample() {
+  return (
+    <div className="space-x-2">
+      <Toggle defaultPressed aria-label="Bold text">
+        <Bold className="h-4 w-4" />
+      </Toggle>
+      <Toggle aria-label="Italic text">
+        <Italic className="h-4 w-4" />
+      </Toggle>
+      <Toggle aria-label="Underline text">
+        <Underline className="h-4 w-4" />
+      </Toggle>
+    </div>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { useState } from "react";
+import { Bold, Italic, Underline, Bookmark, Heart, Star } from "lucide-react";
+
+// Controlled toggle with state management
+function ControlledToggleExample() {
+  const [formatting, setFormatting] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
+
+  const [userPreferences, setUserPreferences] = useState({
+    notifications: true,
+    autoSave: false,
+    darkMode: false,
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Text Formatting Toggles */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Text Formatting</label>
+        <div className="flex space-x-2">
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={formatting.bold}
+            onPressedChange={(pressed) =>
+              setFormatting((prev) => ({ ...prev, bold: pressed }))
+            }
+            aria-label="Toggle bold"
+          >
+            <Bold className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={formatting.italic}
+            onPressedChange={(pressed) =>
+              setFormatting((prev) => ({ ...prev, italic: pressed }))
+            }
+            aria-label="Toggle italic"
+          >
+            <Italic className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={formatting.underline}
+            onPressedChange={(pressed) =>
+              setFormatting((prev) => ({ ...prev, underline: pressed }))
+            }
+            aria-label="Toggle underline"
+          >
+            <Underline className="h-4 w-4" />
+          </Toggle>
+        </div>
+      </div>
+
+      {/* User Preference Toggles */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Preferences</label>
+        <div className="space-y-2">
+          <Toggle
+            pressed={userPreferences.notifications}
+            onPressedChange={(pressed) =>
+              setUserPreferences((prev) => ({
+                ...prev,
+                notifications: pressed,
+              }))
+            }
+            className="w-full justify-start"
+          >
+            Enable Notifications
+          </Toggle>
+          <Toggle
+            pressed={userPreferences.autoSave}
+            onPressedChange={(pressed) =>
+              setUserPreferences((prev) => ({ ...prev, autoSave: pressed }))
+            }
+            className="w-full justify-start"
+          >
+            Auto-save Changes
+          </Toggle>
+          <Toggle
+            pressed={userPreferences.darkMode}
+            onPressedChange={(pressed) =>
+              setUserPreferences((prev) => ({ ...prev, darkMode: pressed }))
+            }
+            className="w-full justify-start"
+          >
+            Dark Mode
+          </Toggle>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### Common Variations
+
+#### Icon-Only Toggles
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Bookmark, Heart, Star, Share } from "lucide-react";
+
+function IconOnlyToggles() {
+  return (
+    <div className="space-y-4">
+      {/* Small icon toggles */}
+      <div className="flex space-x-2">
+        <Toggle size="sm" variant="outline" aria-label="Bookmark">
+          <Bookmark className="h-4 w-4" />
+        </Toggle>
+        <Toggle size="sm" variant="outline" aria-label="Like">
+          <Heart className="h-4 w-4" />
+        </Toggle>
+        <Toggle size="sm" variant="outline" aria-label="Star">
+          <Star className="h-4 w-4" />
+        </Toggle>
+        <Toggle size="sm" variant="outline" aria-label="Share">
+          <Share className="h-4 w-4" />
+        </Toggle>
+      </div>
+
+      {/* Large icon toggles */}
+      <div className="flex space-x-2">
+        <Toggle size="lg" aria-label="Bookmark item">
+          <Bookmark className="h-5 w-5" />
+        </Toggle>
+        <Toggle size="lg" aria-label="Like item">
+          <Heart className="h-5 w-5" />
+        </Toggle>
+        <Toggle size="lg" aria-label="Star item">
+          <Star className="h-5 w-5" />
+        </Toggle>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Text Toggles
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+
+function TextToggles() {
+  return (
+    <div className="space-y-4">
+      {/* Default variant */}
+      <div className="space-x-2">
+        <Toggle>Bold</Toggle>
+        <Toggle>Italic</Toggle>
+        <Toggle>Underline</Toggle>
+      </div>
+
+      {/* Outline variant */}
+      <div className="space-x-2">
+        <Toggle variant="outline">Option 1</Toggle>
+        <Toggle variant="outline">Option 2</Toggle>
+        <Toggle variant="outline">Option 3</Toggle>
+      </div>
+
+      {/* Different sizes */}
+      <div className="space-y-2">
+        <div className="space-x-2">
+          <Toggle size="sm">Small</Toggle>
+          <Toggle size="sm" variant="outline">
+            Small Outline
+          </Toggle>
+        </div>
+        <div className="space-x-2">
+          <Toggle>Default</Toggle>
+          <Toggle variant="outline">Default Outline</Toggle>
+        </div>
+        <div className="space-x-2">
+          <Toggle size="lg">Large</Toggle>
+          <Toggle size="lg" variant="outline">
+            Large Outline
+          </Toggle>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Combined Icon and Text
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Bookmark, Heart, Download, Share } from "lucide-react";
+
+function CombinedToggles() {
+  return (
+    <div className="space-y-4">
+      {/* Icon with text */}
+      <div className="space-x-2">
+        <Toggle variant="outline">
+          <Bookmark className="h-4 w-4" />
+          Bookmark
+        </Toggle>
+        <Toggle variant="outline">
+          <Heart className="h-4 w-4" />
+          Like
+        </Toggle>
+        <Toggle variant="outline">
+          <Download className="h-4 w-4" />
+          Download
+        </Toggle>
+      </div>
+
+      {/* Larger size with icons */}
+      <div className="space-x-2">
+        <Toggle size="lg" variant="outline">
+          <Share className="h-5 w-5" />
+          Share Post
+        </Toggle>
+        <Toggle size="lg">
+          <Bookmark className="h-5 w-5" />
+          Save for Later
+        </Toggle>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Disabled States
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Settings, Lock } from "lucide-react";
+
+function DisabledToggles() {
+  return (
+    <div className="space-y-4">
+      {/* Disabled toggles in different states */}
+      <div className="space-x-2">
+        <Toggle disabled aria-label="Disabled toggle">
+          <Settings className="h-4 w-4" />
+        </Toggle>
+        <Toggle disabled defaultPressed aria-label="Disabled pressed toggle">
+          <Lock className="h-4 w-4" />
+        </Toggle>
+      </div>
+
+      <div className="space-x-2">
+        <Toggle disabled variant="outline">
+          Disabled
+        </Toggle>
+        <Toggle disabled defaultPressed variant="outline">
+          Disabled Pressed
+        </Toggle>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Polymorphic Usage
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import Link from "next/link";
+
+function PolymorphicToggle() {
+  return (
+    <div className="space-x-2">
+      {/* Toggle as a link (note: be careful with semantics) */}
+      <Toggle asChild>
+        <Link href="/bookmarks" aria-label="View bookmarks">
+          <Bookmark className="h-4 w-4" />
+          Bookmarks
+        </Link>
+      </Toggle>
+
+      {/* Toggle as a custom element */}
+      <Toggle asChild>
+        <div role="button" tabIndex={0} aria-label="Custom toggle">
+          Custom Element
+        </div>
+      </Toggle>
+    </div>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Toggle component follows standard React patterns for form controls:
+
+1. **User Interaction**: User clicks or presses keyboard keys (Space/Enter) on the toggle
+2. **State Update**: Component updates its internal pressed state (uncontrolled) or calls onPressedChange (controlled)
+3. **Visual Feedback**: Component re-renders with updated visual state (pressed/unpressed styling)
+4. **Parent Notification**: For controlled usage, parent component receives state update via onPressedChange callback
+
+### Integration with Other Components
+
+Toggle commonly integrates with:
+
+- **Form Components**: Can be used within forms for binary settings
+- **Card Components**: Often placed in card headers or content areas for feature toggles
+- **Toolbar Components**: Frequently used in editor toolbars for formatting options
+- **Settings Panels**: Common in preference and configuration interfaces
+- **List Items**: Used for item-specific actions like bookmarking or favoriting
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Use for Binary States**: Only use Toggle for clear on/off states, not for navigation or complex actions
+- **Provide Clear Visual Feedback**: Ensure pressed and unpressed states are visually distinct
+- **Include Proper Labels**: Always provide accessible labels, especially for icon-only toggles
+- **Choose Appropriate Variants**: Use `outline` for less prominent toggles, `default` for primary toggles
+- **Consider Context**: Group related toggles logically but avoid creating unofficial toggle groups
+
+### Accessibility
+
+- **Keyboard Navigation**: Toggle automatically supports Space and Enter keys for activation
+- **Screen Reader Support**: Built-in ARIA attributes announce toggle state and changes
+- **Focus Management**: Clear focus indicators for keyboard navigation
+- **State Announcement**: Screen readers announce "pressed" or "not pressed" state
+- **Label Association**: Use aria-label or associate with visible labels for clear context
+- **Role Semantics**: Proper button role with toggle behavior
+
+### Performance
+
+- **Minimal Re-renders**: Toggle component optimizes re-rendering for state changes
+- **Controlled vs Uncontrolled**: Use uncontrolled (defaultPressed) for simple toggles, controlled (pressed/onPressedChange) for complex state management
+- **Icon Optimization**: Use optimized SVG icons and consistent sizing for better performance
+- **Event Handling**: Avoid heavy operations in onPressedChange callbacks
+
+## Common Patterns
+
+### Pattern 1: Formatting Toolbar
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Bold, Italic, Underline, Strikethrough } from "lucide-react";
+
+// Independent formatting toggles (not using ToggleGroup for flexibility)
+function FormattingToolbar() {
+  const [formatting, setFormatting] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikethrough: false,
+  });
+
+  const handleFormatToggle = (format: keyof typeof formatting) => {
+    setFormatting((prev) => ({
+      ...prev,
+      [format]: !prev[format],
+    }));
+  };
+
+  return (
+    <div className="flex items-center space-x-1 p-2 border rounded-lg">
+      <Toggle
+        variant="outline"
+        size="sm"
+        pressed={formatting.bold}
+        onPressedChange={() => handleFormatToggle("bold")}
+        aria-label="Toggle bold"
+      >
+        <Bold className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        variant="outline"
+        size="sm"
+        pressed={formatting.italic}
+        onPressedChange={() => handleFormatToggle("italic")}
+        aria-label="Toggle italic"
+      >
+        <Italic className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        variant="outline"
+        size="sm"
+        pressed={formatting.underline}
+        onPressedChange={() => handleFormatToggle("underline")}
+        aria-label="Toggle underline"
+      >
+        <Underline className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        variant="outline"
+        size="sm"
+        pressed={formatting.strikethrough}
+        onPressedChange={() => handleFormatToggle("strikethrough")}
+        aria-label="Toggle strikethrough"
+      >
+        <Strikethrough className="h-4 w-4" />
+      </Toggle>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Item Actions
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Bookmark, Heart, Share } from "lucide-react";
+
+// Toggle actions for individual items (like posts, articles, etc.)
+function ItemActions({ item, onUpdate }) {
+  const [itemState, setItemState] = useState({
+    bookmarked: item.bookmarked,
+    liked: item.liked,
+    shared: item.shared,
+  });
+
+  const handleToggle = async (action: keyof typeof itemState) => {
+    const newState = { ...itemState, [action]: !itemState[action] };
+    setItemState(newState);
+
+    try {
+      await onUpdate(item.id, action, newState[action]);
+    } catch (error) {
+      // Revert on error
+      setItemState(itemState);
+    }
+  };
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Toggle
+        size="sm"
+        pressed={itemState.bookmarked}
+        onPressedChange={() => handleToggle("bookmarked")}
+        aria-label={itemState.bookmarked ? "Remove bookmark" : "Add bookmark"}
+      >
+        <Bookmark className="h-4 w-4" />
+      </Toggle>
+
+      <Toggle
+        size="sm"
+        pressed={itemState.liked}
+        onPressedChange={() => handleToggle("liked")}
+        aria-label={itemState.liked ? "Unlike" : "Like"}
+      >
+        <Heart className="h-4 w-4" />
+      </Toggle>
+
+      <Toggle
+        size="sm"
+        pressed={itemState.shared}
+        onPressedChange={() => handleToggle("shared")}
+        aria-label="Share item"
+      >
+        <Share className="h-4 w-4" />
+      </Toggle>
+    </div>
+  );
+}
+```
+
+### Pattern 3: Settings Panel
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+
+// Settings panel with various toggle options
+function SettingsPanel() {
+  const [settings, setSettings] = useState({
+    notifications: true,
+    autoSave: false,
+    darkMode: true,
+    emailUpdates: false,
+    soundEffects: true,
+  });
+
+  const handleSettingChange = (setting: keyof typeof settings) => {
+    setSettings((prev) => ({
+      ...prev,
+      [setting]: !prev[setting],
+    }));
+  };
+
+  const settingsConfig = [
+    {
+      key: "notifications" as const,
+      label: "Push Notifications",
+      description: "Receive notifications for important updates",
+    },
+    {
+      key: "autoSave" as const,
+      label: "Auto-save",
+      description: "Automatically save your work every few minutes",
+    },
+    {
+      key: "darkMode" as const,
+      label: "Dark Mode",
+      description: "Use dark theme for better viewing in low light",
+    },
+    {
+      key: "emailUpdates" as const,
+      label: "Email Updates",
+      description: "Receive weekly email summaries",
+    },
+    {
+      key: "soundEffects" as const,
+      label: "Sound Effects",
+      description: "Play sounds for various app interactions",
+    },
+  ];
+
+  return (
+    <div className="space-y-4 p-4">
+      <h2 className="text-lg font-semibold">App Settings</h2>
+      <div className="space-y-4">
+        {settingsConfig.map((setting) => (
+          <div key={setting.key} className="flex items-center justify-between">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">{setting.label}</label>
+              <p className="text-sm text-muted-foreground">
+                {setting.description}
+              </p>
+            </div>
+            <Toggle
+              pressed={settings[setting.key]}
+              onPressedChange={() => handleSettingChange(setting.key)}
+              aria-label={`Toggle ${setting.label}`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 4: Filter Controls
+
+```tsx
+import { Toggle } from "@/components/ui/toggle";
+import { Filter } from "lucide-react";
+
+// Independent filter toggles for data views
+function FilterControls({ onFiltersChange }) {
+  const [filters, setFilters] = useState({
+    showCompleted: false,
+    showArchived: false,
+    showFavorites: false,
+    showRecent: true,
+  });
+
+  const handleFilterChange = (filterKey: keyof typeof filters) => {
+    const newFilters = {
+      ...filters,
+      [filterKey]: !filters[filterKey],
+    };
+    setFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
+
+  return (
+    <div className="flex items-center space-x-4 p-4 border rounded-lg">
+      <div className="flex items-center space-x-2">
+        <Filter className="h-4 w-4" />
+        <span className="text-sm font-medium">Filters:</span>
+      </div>
+
+      <div className="flex space-x-2">
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={filters.showCompleted}
+          onPressedChange={() => handleFilterChange("showCompleted")}
+        >
+          Completed
+        </Toggle>
+
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={filters.showArchived}
+          onPressedChange={() => handleFilterChange("showArchived")}
+        >
+          Archived
+        </Toggle>
+
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={filters.showFavorites}
+          onPressedChange={() => handleFilterChange("showFavorites")}
+        >
+          Favorites
+        </Toggle>
+
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={filters.showRecent}
+          onPressedChange={() => handleFilterChange("showRecent")}
+        >
+          Recent
+        </Toggle>
+      </div>
+    </div>
+  );
+}
+```
+
+## Variant Details
+
+### Visual Variants
+
+- **default**: Standard toggle with background fill when pressed, suitable for primary toggle actions
+- **outline**: Bordered toggle with transparent background, ideal for secondary or grouped toggles
+
+### Size Variants
+
+- **default**: Standard toggle size (36px height) suitable for most use cases
+- **sm**: Smaller toggle (32px height) for compact interfaces or when used in groups
+- **lg**: Larger toggle (40px height) for prominent controls or accessibility requirements
+
+### Technical Features
+
+- **Polymorphic Rendering**: Use `asChild` prop to render as different elements while maintaining toggle behavior
+- **Icon Support**: Built-in spacing and sizing for icons within toggles
+- **State Management**: Supports both controlled and uncontrolled usage patterns
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Focus Management**: Proper focus-visible states and keyboard interaction
+- **Custom Styling**: Extend using the `toggleVariants` utility for custom styling needs

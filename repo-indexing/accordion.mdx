@@ -1,0 +1,498 @@
+# Accordion Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate accordion functionality with required hierarchical structure
+
+### When to Use
+
+Accordion components are ideal for creating interactive content sections that can be expanded and collapsed. Use accordions when you need to:
+
+- Organize large amounts of content in a compact, scannable format
+- Create FAQ sections or help documentation with expandable answers
+- Build collapsible navigation menus or filter panels
+- Display step-by-step instructions or progressive disclosure interfaces
+- Manage form sections that users can open and close as needed
+- Create space-efficient layouts that allow users to focus on relevant content
+- Implement content sections where only one or multiple sections should be visible at a time
+
+### Architecture
+
+**Critical/Strong Coupling**: The Accordion component group follows a strict hierarchical composition pattern where components must be used together in a specific parent-child relationship. The root Accordion component manages state and keyboard navigation, while child components depend on this context to function properly.
+
+### Component Interdependencies
+
+The Accordion component group uses a required compositional hierarchy:
+
+- **Accordion** serves as the root container that provides state management, keyboard navigation, and accessibility context
+- **AccordionItem** represents individual collapsible sections and must be direct children of Accordion
+- **AccordionTrigger** handles the expand/collapse interaction and must be placed within AccordionItem (wrapped in AccordionHeader)
+- **AccordionContent** contains the collapsible content and must be paired with AccordionTrigger within the same AccordionItem
+- Components communicate through Radix UI's compound component pattern and shared ARIA attributes
+- Keyboard navigation (arrow keys, Home, End) is automatically managed by the root Accordion component
+
+## Components
+
+### Accordion {Primary Component}
+
+The foundational container component that manages the accordion's state, behavior, and accessibility features.
+
+**Purpose:** Creates the root accordion container with state management for expanding/collapsing items, keyboard navigation, and ARIA accessibility features.
+
+**Interface:**
+
+```typescript
+interface AccordionProps
+  extends React.ComponentProps<typeof AccordionPrimitive.Root> {
+  type?: "single" | "multiple"; // Determines if one or multiple items can be open
+  defaultValue?: string | string[]; // Default open item(s) for uncontrolled usage
+  value?: string | string[]; // Controlled value for open item(s)
+  onValueChange?: (value: string | string[]) => void; // Callback when open items change
+  collapsible?: boolean; // Allow all items to be closed (only for type="single")
+  orientation?: "horizontal" | "vertical"; // Layout orientation
+  dir?: "ltr" | "rtl"; // Text direction
+  disabled?: boolean; // Disable all accordion interactions
+  className?: string;
+  children: React.ReactNode; // Required AccordionItem components
+}
+```
+
+**Dependencies:** None - this is the root component
+**Provides:** State management context, keyboard navigation, accessibility attributes, and focus management to all child components
+
+**Usage Example:**
+
+```tsx
+import { Accordion } from "@/components/ui/accordion";
+
+function SingleAccordion() {
+  return (
+    <Accordion type="single" collapsible>
+      {/* AccordionItem components go here */}
+    </Accordion>
+  );
+}
+
+function MultipleAccordion() {
+  return (
+    <Accordion type="multiple" defaultValue={["item-1", "item-2"]}>
+      {/* AccordionItem components go here */}
+    </Accordion>
+  );
+}
+```
+
+### AccordionItem {Dependent Component}
+
+Individual collapsible section container that represents a single accordion item with its own state.
+
+**Purpose:** Creates a container for each collapsible section within the accordion, managing the relationship between trigger and content.
+
+**Interface:**
+
+```typescript
+interface AccordionItemProps
+  extends React.ComponentProps<typeof AccordionPrimitive.Item> {
+  value: string; // Unique identifier for this accordion item
+  disabled?: boolean; // Disable this specific item
+  className?: string;
+  children: React.ReactNode; // Must contain AccordionTrigger and AccordionContent
+}
+```
+
+**Context Dependencies:** Must be used within an Accordion component to access state management context
+**Parent Requirements:** Must be a direct child of the Accordion component
+
+**Usage Example:**
+
+```tsx
+// Must be used within Accordion component
+<Accordion type="single" collapsible>
+  <AccordionItem value="item-1">
+    {/* AccordionTrigger and AccordionContent go here */}
+  </AccordionItem>
+  <AccordionItem value="item-2" disabled>
+    {/* This item will be disabled */}
+  </AccordionItem>
+</Accordion>
+```
+
+### AccordionTrigger {Dependent Component}
+
+The interactive button element that toggles the visibility of the associated accordion content.
+
+**Purpose:** Provides the clickable interface for expanding and collapsing accordion sections, with built-in accessibility and visual feedback.
+
+**Interface:**
+
+```typescript
+interface AccordionTriggerProps
+  extends React.ComponentProps<typeof AccordionPrimitive.Trigger> {
+  className?: string;
+  children: React.ReactNode; // The trigger text/content
+  asChild?: boolean; // Use child element as trigger
+}
+```
+
+**Context Dependencies:** Must be used within AccordionItem to access item state and ARIA attributes
+**Parent Requirements:** Must be placed within an AccordionItem component, typically wrapped in AccordionHeader
+
+**Usage Example:**
+
+```tsx
+<AccordionItem value="item-1">
+  <AccordionTrigger>What is your return policy?</AccordionTrigger>
+  <AccordionContent>{/* Content goes here */}</AccordionContent>
+</AccordionItem>
+```
+
+### AccordionContent {Dependent Component}
+
+The collapsible container that holds the content to be shown or hidden when the trigger is activated.
+
+**Purpose:** Contains the expandable content with smooth animations and proper accessibility attributes for screen readers.
+
+**Interface:**
+
+```typescript
+interface AccordionContentProps
+  extends React.ComponentProps<typeof AccordionPrimitive.Content> {
+  className?: string;
+  children: React.ReactNode; // The content to show/hide
+  forceMount?: boolean; // Force content to always be mounted
+}
+```
+
+**Context Dependencies:** Must be used within AccordionItem to access expand/collapse state and animations
+**Parent Requirements:** Must be paired with AccordionTrigger within the same AccordionItem
+
+**Usage Example:**
+
+```tsx
+<AccordionItem value="item-1">
+  <AccordionTrigger>Question</AccordionTrigger>
+  <AccordionContent>
+    <p>
+      This is the detailed answer that will be shown when the item is expanded.
+    </p>
+  </AccordionContent>
+</AccordionItem>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+
+// Minimal required structure for single-item accordion
+function BasicAccordion() {
+  return (
+    <Accordion type="single" collapsible>
+      <AccordionItem value="item-1">
+        <AccordionTrigger>Is it accessible?</AccordionTrigger>
+        <AccordionContent>
+          Yes. It adheres to the WAI-ARIA design pattern.
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+// Complex usage with multiple items, controlled state, and custom styling
+function AdvancedAccordion() {
+  const [openItems, setOpenItems] = React.useState<string[]>(["faq-1"]);
+
+  return (
+    <Accordion
+      type="multiple"
+      value={openItems}
+      onValueChange={setOpenItems}
+      className="w-full max-w-2xl mx-auto"
+    >
+      <AccordionItem value="faq-1" className="border-b">
+        <AccordionTrigger className="text-left hover:text-blue-600">
+          How do I get started with your service?
+        </AccordionTrigger>
+        <AccordionContent className="text-gray-600">
+          <div className="space-y-2">
+            <p>Getting started is easy! Follow these steps:</p>
+            <ol className="list-decimal ml-4">
+              <li>Sign up for an account</li>
+              <li>Complete your profile</li>
+              <li>Choose your subscription plan</li>
+              <li>Start using our features</li>
+            </ol>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="faq-2" className="border-b">
+        <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
+        <AccordionContent>
+          <p>We accept all major credit cards, PayPal, and bank transfers.</p>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="faq-3" disabled className="border-b opacity-50">
+        <AccordionTrigger>Coming Soon Feature</AccordionTrigger>
+        <AccordionContent>
+          <p>This feature is currently under development.</p>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+```
+
+### Common Variations
+
+#### FAQ Section
+
+```tsx
+// Ideal for frequently asked questions
+function FAQAccordion() {
+  const faqs = [
+    {
+      question: "How do I reset my password?",
+      answer:
+        "Click on 'Forgot Password' on the login page and follow the instructions sent to your email.",
+    },
+    {
+      question: "Can I cancel my subscription anytime?",
+      answer:
+        "Yes, you can cancel your subscription at any time from your account settings.",
+    },
+    {
+      question: "Do you offer customer support?",
+      answer: "We provide 24/7 customer support via email, chat, and phone.",
+    },
+  ];
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+      <Accordion type="single" collapsible className="space-y-2">
+        {faqs.map((faq, index) => (
+          <AccordionItem
+            key={index}
+            value={`faq-${index}`}
+            className="border rounded-lg px-4"
+          >
+            <AccordionTrigger className="text-left font-medium">
+              {faq.question}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600">
+              {faq.answer}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+```
+
+#### Settings Panel
+
+```tsx
+// Perfect for organizing settings into collapsible sections
+function SettingsAccordion() {
+  return (
+    <Accordion type="multiple" defaultValue={["account"]} className="space-y-4">
+      <AccordionItem value="account" className="border rounded-lg">
+        <AccordionTrigger className="px-4 py-3 font-semibold">
+          Account Settings
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input type="email" className="w-full p-2 border rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Username</label>
+              <input type="text" className="w-full p-2 border rounded" />
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="notifications" className="border rounded-lg">
+        <AccordionTrigger className="px-4 py-3 font-semibold">
+          Notification Preferences
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          <div className="space-y-3">
+            <label className="flex items-center">
+              <input type="checkbox" className="mr-2" />
+              Email notifications
+            </label>
+            <label className="flex items-center">
+              <input type="checkbox" className="mr-2" />
+              Push notifications
+            </label>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The accordion follows a compound component pattern where:
+
+- The root Accordion component manages the overall state of which items are open/closed
+- AccordionItem components register themselves with the root and receive their open/closed state
+- AccordionTrigger receives its pressed state and accessibility attributes from its parent AccordionItem
+- AccordionContent receives its expanded state and applies appropriate animations based on the item state
+
+### Context Sharing
+
+The accordion uses Radix UI's internal context system:
+
+- **AccordionProvider** (internal): Shares accordion type, orientation, and state management functions
+- **AccordionItemProvider** (internal): Shares individual item state, value, and interaction handlers
+- Components communicate through data attributes and ARIA properties rather than React context props
+
+### Event Handling
+
+Event handling flows from user interactions up through the component hierarchy:
+
+- AccordionTrigger captures click and keyboard events
+- Events bubble up to AccordionItem which updates its state
+- AccordionItem communicates state changes to the root Accordion
+- Root Accordion updates the overall state and notifies other items as needed
+- Keyboard navigation (arrow keys, Home, End) is handled at the root level
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Use semantic structure**: Always wrap AccordionTrigger in AccordionHeader for proper accessibility and styling context
+- **Provide unique values**: Ensure each AccordionItem has a unique value prop for proper state management
+- **Choose appropriate type**: Use `type="single"` when only one section should be open, `type="multiple"` when users might need multiple sections open
+- **Consider default states**: Use `defaultValue` to open important sections by default, but don't overwhelm users with too many open items
+
+### Accessibility
+
+- Accordion components automatically provide proper ARIA attributes including `aria-expanded`, `aria-controls`, and `aria-labelledby`
+- Keyboard navigation follows WAI-ARIA guidelines with arrow keys for navigation and Enter/Space for activation
+- Focus management ensures proper tab order and focus indicators throughout the accordion
+- Screen readers announce the state changes when items expand or collapse
+- Each AccordionTrigger acts as a proper button with semantic meaning
+
+### Performance
+
+- Use `collapsible={true}` with single accordions to allow users to close all items and reduce cognitive load
+- Consider using `forceMount={true}` on AccordionContent only when you need to preserve component state during collapse
+- Large content within AccordionContent should be lazy-loaded or virtualized for better performance
+- Animations are optimized using CSS transforms and are automatically reduced for users with motion preferences
+
+## Common Patterns
+
+### Pattern 1: Progressive Disclosure Form
+
+```tsx
+// Ideal for multi-step forms or complex data entry
+function FormAccordion() {
+  const [completedSteps, setCompletedSteps] = React.useState<string[]>([]);
+
+  return (
+    <Accordion type="single" collapsible defaultValue="step-1">
+      <AccordionItem value="step-1">
+        <AccordionTrigger className="flex items-center">
+          Personal Information
+          {completedSteps.includes("step-1") && (
+            <CheckIcon className="ml-2 h-4 w-4 text-green-600" />
+          )}
+        </AccordionTrigger>
+        <AccordionContent>
+          {/* Form fields for personal information */}
+          <div className="space-y-4">
+            <input
+              placeholder="First Name"
+              className="w-full p-2 border rounded"
+            />
+            <input
+              placeholder="Last Name"
+              className="w-full p-2 border rounded"
+            />
+            <button
+              onClick={() => setCompletedSteps([...completedSteps, "step-1"])}
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              Continue
+            </button>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="step-2">
+        <AccordionTrigger>Contact Information</AccordionTrigger>
+        <AccordionContent>{/* Contact form fields */}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+```
+
+### Pattern 2: Content Organization
+
+```tsx
+// Perfect for documentation, help centers, or content-heavy pages
+function DocumentationAccordion() {
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8">API Documentation</h1>
+
+      <Accordion type="multiple" className="space-y-4">
+        <AccordionItem value="authentication">
+          <AccordionTrigger className="text-lg font-semibold">
+            Authentication
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="prose max-w-none">
+              <p>Learn how to authenticate your API requests...</p>
+              <pre className="bg-gray-100 p-4 rounded">
+                <code>{`Authorization: Bearer your-api-key`}</code>
+              </pre>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="endpoints">
+          <AccordionTrigger className="text-lg font-semibold">
+            Available Endpoints
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h4 className="font-medium">GET /api/users</h4>
+                <p className="text-gray-600">Retrieve a list of users</p>
+              </div>
+              {/* More endpoints */}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
+```

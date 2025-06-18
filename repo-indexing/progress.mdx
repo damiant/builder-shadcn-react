@@ -1,0 +1,514 @@
+# Progress Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate progress bar functionality for displaying the completion status of tasks, loading states, or any process that has measurable progress.
+
+### When to Use
+
+- **Task completion**: Show progress of file uploads, downloads, or multi-step processes
+- **Loading states**: Indicate loading progress when the completion percentage is known
+- **Form completion**: Display how much of a form or survey has been completed
+- **Goal tracking**: Visualize progress toward targets like fundraising goals or skill levels
+- **Installation progress**: Show software installation or update progress
+- **Data processing**: Indicate progress of batch operations or data imports
+- **Reading progress**: Show how much of an article or document has been read
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently without requiring other components. It provides a self-contained progress bar with accessibility features and smooth animations.
+
+### Component Interdependencies
+
+None - Progress is a standalone component that operates independently.
+
+## Components
+
+### Progress {Standalone Component}
+
+**Purpose:** A visual indicator that shows the completion percentage of a task or process with smooth animations and accessible design.
+
+**Interface:**
+
+```typescript
+interface ProgressProps
+  extends React.ComponentProps<typeof ProgressPrimitive.Root> {
+  className?: string;
+  value?: number; // Current progress value (0-100)
+  max?: number; // Maximum value (defaults to 100)
+  getValueLabel?: (value: number, max: number) => string; // Custom label generator
+  asChild?: boolean; // Render as different element
+}
+```
+
+**Key Features:**
+
+- **Accessible design**: Built on Radix UI primitives with ARIA support
+- **Smooth animations**: CSS transitions for progress changes
+- **Customizable styling**: TailwindCSS classes with CSS variable theming
+- **Value clamping**: Automatically handles values outside the 0-max range
+- **Screen reader support**: Proper ARIA attributes and optional custom labels
+- **Responsive design**: Adapts to container width automatically
+
+**Usage Example:**
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+function Example() {
+  const [progress, setProgress] = React.useState(13);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setProgress(66), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return <Progress value={progress} className="w-[60%]" />;
+}
+```
+
+## Integration Patterns
+
+### Basic Progress Indicator
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+function BasicProgress() {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>Task Progress</span>
+          <span>75%</span>
+        </div>
+        <Progress value={75} className="h-2" />
+      </div>
+    </div>
+  );
+}
+```
+
+### Loading States with Animation
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+import { useState, useEffect } from "react";
+
+function LoadingProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress === 100) {
+          return 0;
+        }
+        const diff = Math.random() * 10;
+        return Math.min(oldProgress + diff, 100);
+      });
+    }, 200);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm text-muted-foreground">
+        <span>Loading data...</span>
+        <span>{Math.round(progress)}%</span>
+      </div>
+      <Progress value={progress} className="h-1" />
+    </div>
+  );
+}
+```
+
+### File Upload Progress
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+import { Upload, CheckCircle } from "lucide-react";
+
+function FileUploadProgress({
+  fileName,
+  progress,
+  isComplete,
+}: {
+  fileName: string;
+  progress: number;
+  isComplete: boolean;
+}) {
+  return (
+    <div className="space-y-2 p-4 border rounded-lg">
+      <div className="flex items-center gap-2">
+        {isComplete ? (
+          <CheckCircle className="h-4 w-4 text-green-500" />
+        ) : (
+          <Upload className="h-4 w-4 text-blue-500" />
+        )}
+        <span className="text-sm font-medium truncate">{fileName}</span>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{isComplete ? "Upload complete" : "Uploading..."}</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <Progress
+          value={progress}
+          className="h-1.5"
+          getValueLabel={(value, max) =>
+            `${fileName} upload ${Math.round((value / max) * 100)}% complete`
+          }
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### Multi-Step Form Progress
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+function FormProgress({
+  currentStep,
+  totalSteps,
+  stepTitles,
+}: {
+  currentStep: number;
+  totalSteps: number;
+  stepTitles: string[];
+}) {
+  const progress = (currentStep / totalSteps) * 100;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">
+          Step {currentStep} of {totalSteps}
+        </span>
+        <span className="font-medium">
+          {stepTitles[currentStep - 1] || "Complete"}
+        </span>
+      </div>
+
+      <Progress value={progress} className="h-2" />
+
+      <div className="flex justify-between text-xs text-muted-foreground">
+        {stepTitles.map((title, index) => (
+          <span
+            key={index}
+            className={
+              index < currentStep
+                ? "text-primary font-medium"
+                : index === currentStep - 1
+                  ? "text-foreground font-medium"
+                  : ""
+            }
+          >
+            {title}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Skill or Goal Progress
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+
+function SkillProgress({
+  skill,
+  currentLevel,
+  targetLevel,
+  experience,
+}: {
+  skill: string;
+  currentLevel: number;
+  targetLevel: number;
+  experience: number;
+}) {
+  const progress = (experience / 100) * 100; // Assuming 100 XP per level
+
+  return (
+    <div className="space-y-3 p-4 border rounded-lg">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h3 className="font-medium">{skill}</h3>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">Level {currentLevel}</Badge>
+            <span className="text-xs text-muted-foreground">
+              → Level {targetLevel}
+            </span>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm font-medium">{experience}/100 XP</div>
+          <div className="text-xs text-muted-foreground">
+            {100 - experience} XP to next level
+          </div>
+        </div>
+      </div>
+
+      <Progress
+        value={progress}
+        className="h-2"
+        getValueLabel={(value) =>
+          `${skill} progress: ${Math.round(value)}% complete`
+        }
+      />
+    </div>
+  );
+}
+```
+
+### Reading Progress Indicator
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
+
+function ReadingProgress() {
+  const [readingProgress, setReadingProgress] = useState(0);
+
+  useEffect(() => {
+    const updateReadingProgress = () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const scrollHeight =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const progress = (scrollTop / scrollHeight) * 100;
+      setReadingProgress(progress);
+    };
+
+    window.addEventListener("scroll", updateReadingProgress);
+    return () => window.removeEventListener("scroll", updateReadingProgress);
+  }, []);
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <Progress
+        value={readingProgress}
+        className="h-1 rounded-none border-none"
+      />
+    </div>
+  );
+}
+```
+
+## Styling Variations
+
+### Size Variations
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+function SizeVariations() {
+  return (
+    <div className="space-y-4">
+      {/* Thin progress bar */}
+      <Progress value={33} className="h-1" />
+
+      {/* Default size */}
+      <Progress value={66} className="h-2" />
+
+      {/* Thick progress bar */}
+      <Progress value={90} className="h-4" />
+    </div>
+  );
+}
+```
+
+### Color Variations
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+function ColorVariations() {
+  return (
+    <div className="space-y-4">
+      {/* Success variant */}
+      <Progress value={100} className="[&>*]:bg-green-500" />
+
+      {/* Warning variant */}
+      <Progress value={66} className="[&>*]:bg-yellow-500" />
+
+      {/* Danger variant */}
+      <Progress value={25} className="[&>*]:bg-red-500" />
+
+      {/* Custom gradient */}
+      <Progress
+        value={75}
+        className="[&>*]:bg-gradient-to-r [&>*]:from-blue-500 [&>*]:to-purple-500"
+      />
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Use meaningful values**: Ensure progress values accurately represent actual completion (0-100% or 0-max)
+- **Provide context**: Always accompany progress bars with labels or descriptions explaining what's being measured
+- **Update smoothly**: Use appropriate intervals for updates to avoid jarky animations or overwhelming users
+- **Consider indeterminate states**: For unknown progress duration, consider using loading spinners instead
+
+### Accessibility
+
+- **Screen reader support**: The component includes proper ARIA attributes (`role="progressbar"`, `aria-valuemin`, `aria-valuemax`, `aria-valuenow`)
+- **Custom labels**: Use the `getValueLabel` prop to provide descriptive labels for screen readers
+- **Visual indicators**: Don't rely solely on the progress bar; include text indicators for progress percentage or status
+- **Color contrast**: Ensure sufficient contrast between the progress indicator and background
+
+### Performance
+
+- **Throttle updates**: For real-time progress (like reading progress), throttle scroll or resize events to prevent excessive re-renders
+- **Avoid frequent re-renders**: Batch progress updates when possible, especially for rapid changes
+- **CSS transitions**: The component uses CSS transitions for smooth animations without JavaScript overhead
+
+## Common Patterns
+
+### Pattern 1: Progress with Status Messages
+
+```tsx
+function ProgressWithStatus({
+  value,
+  status,
+}: {
+  value: number;
+  status: string;
+}) {
+  const getStatusColor = (progress: number) => {
+    if (progress < 30) return "text-red-600";
+    if (progress < 70) return "text-yellow-600";
+    return "text-green-600";
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">Progress</span>
+        <span className={`text-sm ${getStatusColor(value)}`}>{status}</span>
+      </div>
+      <Progress value={value} />
+      <div className="text-xs text-muted-foreground text-right">
+        {Math.round(value)}% complete
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Progress with Pause/Resume
+
+```tsx
+function ControllableProgress() {
+  const [progress, setProgress] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setIsRunning(false);
+          return 100;
+        }
+        return prev + 1;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  return (
+    <div className="space-y-4">
+      <Progress value={progress} />
+      <div className="flex gap-2">
+        <button
+          onClick={() => setIsRunning(!isRunning)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded"
+        >
+          {isRunning ? "Pause" : "Start"}
+        </button>
+        <button
+          onClick={() => {
+            setProgress(0);
+            setIsRunning(false);
+          }}
+          className="px-4 py-2 bg-secondary text-secondary-foreground rounded"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 3: Progress with Segments
+
+```tsx
+function SegmentedProgress({
+  segments,
+  currentValue,
+}: {
+  segments: Array<{ label: string; value: number; color?: string }>;
+  currentValue: number;
+}) {
+  const totalValue = segments.reduce((sum, segment) => sum + segment.value, 0);
+  const progressPercentage = (currentValue / totalValue) * 100;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Overall Progress</span>
+        <span>{Math.round(progressPercentage)}%</span>
+      </div>
+
+      <Progress value={progressPercentage} />
+
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        {segments.map((segment, index) => {
+          const segmentProgress = Math.min(
+            Math.max(
+              currentValue -
+                segments.slice(0, index).reduce((sum, s) => sum + s.value, 0),
+              0,
+            ),
+            segment.value,
+          );
+          const segmentPercentage = (segmentProgress / segment.value) * 100;
+
+          return (
+            <div key={index} className="space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{segment.label}</span>
+                <span>{Math.round(segmentPercentage)}%</span>
+              </div>
+              <Progress
+                value={segmentPercentage}
+                className={`h-1 ${segment.color ? `[&>*]:${segment.color}` : ""}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+```

@@ -1,0 +1,523 @@
+# Breadcrumb Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate accessible breadcrumb navigation that shows users their current location within a website's hierarchy and provides easy navigation back to previous levels.
+
+### When to Use
+
+- **Deep navigation structures** - When your application has multiple nested pages or sections that users need to navigate through
+- **E-commerce product categories** - To show the path from main category to subcategory to product
+- **Documentation sites** - To help users understand their location within documentation hierarchies
+- **Multi-step processes** - To show progress and allow navigation between completed steps
+- **File system navigation** - When displaying folder/file hierarchies
+- **Search result context** - To show where search results are located within your site structure
+
+### Architecture
+
+**Strong Coupling**: The breadcrumb components form a tightly integrated system with required compositional relationships and shared accessibility patterns.
+
+### Component Interdependencies
+
+The breadcrumb components follow a strict hierarchical structure:
+
+- **Breadcrumb** → **BreadcrumbList** → **BreadcrumbItem** → **BreadcrumbLink**|**BreadcrumbPage**
+- **BreadcrumbSeparator** is inserted between items automatically or explicitly
+- **BreadcrumbEllipsis** can replace items to handle overflow scenarios
+- All components share semantic HTML structure and accessibility attributes for screen readers
+
+## Components
+
+### Breadcrumb {Primary Component}
+
+The root navigation container that provides semantic structure and accessibility context for the entire breadcrumb trail.
+
+**Purpose:** Establishes the main navigation landmark and provides the foundation for all child breadcrumb components.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbProps extends React.ComponentProps<"nav"> {
+  children: React.ReactNode; // Required BreadcrumbList as direct child
+}
+```
+
+**Dependencies:** None (root component)
+**Provides:** Semantic navigation container with proper ARIA labeling
+
+**Usage Example:**
+
+```tsx
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+
+function Example() {
+  return (
+    <Breadcrumb>{/* Must contain BreadcrumbList as direct child */}</Breadcrumb>
+  );
+}
+```
+
+### BreadcrumbList {Required Child}
+
+The ordered list container that holds the sequence of breadcrumb items with proper semantic structure.
+
+**Purpose:** Provides the ordered list structure required for accessibility and maintains proper spacing and layout for breadcrumb items.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbListProps extends React.ComponentProps<"ol"> {
+  className?: string;
+  children: React.ReactNode; // BreadcrumbItem components
+}
+```
+
+**Context Dependencies:** Must be a direct child of Breadcrumb component
+**Parent Requirements:** Breadcrumb component
+
+**Usage Example:**
+
+```tsx
+// Must be used within Breadcrumb
+<Breadcrumb>
+  <BreadcrumbList>{/* BreadcrumbItem components go here */}</BreadcrumbList>
+</Breadcrumb>
+```
+
+### BreadcrumbItem {Container Component}
+
+Individual list item container that wraps each breadcrumb link or page indicator.
+
+**Purpose:** Provides proper list item semantics and consistent spacing for each breadcrumb element.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbItemProps extends React.ComponentProps<"li"> {
+  className?: string;
+  children: React.ReactNode; // BreadcrumbLink, BreadcrumbPage, or BreadcrumbSeparator
+}
+```
+
+**Context Dependencies:** Must be a child of BreadcrumbList
+**Parent Requirements:** BreadcrumbList component
+
+**Usage Example:**
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/">Home</BreadcrumbLink>
+  </BreadcrumbItem>
+</BreadcrumbList>
+```
+
+### BreadcrumbLink {Interactive Component}
+
+Clickable link component for navigable breadcrumb items that aren't the current page.
+
+**Purpose:** Provides interactive navigation to previous levels in the breadcrumb hierarchy with hover states and accessibility features.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbLinkProps extends React.ComponentProps<"a"> {
+  asChild?: boolean; // Use with custom link components (Next.js Link, React Router Link)
+  className?: string;
+  href?: string;
+  children: React.ReactNode;
+}
+```
+
+**Context Dependencies:** Must be a child of BreadcrumbItem
+**Parent Requirements:** BreadcrumbItem component
+
+**Usage Example:**
+
+```tsx
+<BreadcrumbItem>
+  <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+</BreadcrumbItem>
+
+// With Next.js Link
+<BreadcrumbItem>
+  <BreadcrumbLink asChild>
+    <Link href="/products">Products</Link>
+  </BreadcrumbLink>
+</BreadcrumbItem>
+```
+
+### BreadcrumbPage {Current Page Indicator}
+
+Non-interactive component that represents the current page in the breadcrumb trail.
+
+**Purpose:** Indicates the user's current location with proper accessibility attributes and visual styling to distinguish it from clickable links.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbPageProps extends React.ComponentProps<"span"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Context Dependencies:** Must be a child of BreadcrumbItem (typically the last one)
+**Parent Requirements:** BreadcrumbItem component
+
+**Usage Example:**
+
+```tsx
+<BreadcrumbItem>
+  <BreadcrumbPage>Current Page</BreadcrumbPage>
+</BreadcrumbItem>
+```
+
+### BreadcrumbSeparator {Visual Separator}
+
+Visual separator between breadcrumb items that provides clear delineation of the navigation hierarchy.
+
+**Purpose:** Creates visual separation between breadcrumb items with customizable icons and proper accessibility attributes.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbSeparatorProps extends React.ComponentProps<"li"> {
+  className?: string;
+  children?: React.ReactNode; // Custom separator icon (defaults to ChevronRight)
+}
+```
+
+**Context Dependencies:** Used between BreadcrumbItem components within BreadcrumbList
+**Parent Requirements:** BreadcrumbList component
+
+**Usage Example:**
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/">Home</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbSeparator />
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbSeparator>
+    <CustomIcon />
+  </BreadcrumbSeparator>
+  <BreadcrumbItem>
+    <BreadcrumbPage>Details</BreadcrumbPage>
+  </BreadcrumbItem>
+</BreadcrumbList>
+```
+
+### BreadcrumbEllipsis {Overflow Indicator}
+
+Ellipsis component used to indicate collapsed/hidden breadcrumb items in long navigation paths.
+
+**Purpose:** Provides a compact way to handle breadcrumb overflow while maintaining usability and indicating there are hidden navigation levels.
+
+**Interface:**
+
+```typescript
+interface BreadcrumbEllipsisProps extends React.ComponentProps<"span"> {
+  className?: string;
+}
+```
+
+**Context Dependencies:** Can be used within BreadcrumbItem as a replacement for links
+**Parent Requirements:** BreadcrumbItem component
+
+**Usage Example:**
+
+```tsx
+<BreadcrumbItem>
+  <BreadcrumbEllipsis />
+</BreadcrumbItem>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
+// Minimal required structure
+function BasicBreadcrumb() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Current Page</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
+} from "@/components/ui/breadcrumb";
+import Link from "next/link";
+
+// Complex breadcrumb with overflow handling and custom links
+function AdvancedBreadcrumb() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/">Home</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbEllipsis />
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/products">Products</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/products/electronics">Electronics</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Smartphones</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// E-commerce product navigation
+function ProductBreadcrumb({ category, subcategory, product }) {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/shop">Shop</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href={`/shop/${category}`}>{category}</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href={`/shop/${category}/${subcategory}`}>
+            {subcategory}
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>{product}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+// Documentation navigation with custom separator
+function DocsBreadcrumb({ sections, currentPage }) {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/docs">Documentation</BreadcrumbLink>
+        </BreadcrumbItem>
+        {sections.map((section, index) => (
+          <React.Fragment key={section.slug}>
+            <BreadcrumbSeparator>
+              <span>/</span>
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbLink href={section.href}>
+                {section.title}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          </React.Fragment>
+        ))}
+        <BreadcrumbSeparator>
+          <span>/</span>
+        </BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+- **Static Structure**: Breadcrumb components primarily display static navigation information
+- **Dynamic Content**: Content is typically passed as children or through props from parent components
+- **URL Integration**: Links typically derive from routing data or URL parameters
+
+### Context Sharing
+
+- **Semantic Structure**: All components contribute to a unified navigation landmark
+- **Accessibility Context**: ARIA attributes are coordinated across components for screen reader compatibility
+- **Visual Consistency**: Shared CSS classes and design tokens ensure visual cohesion
+
+### Event Handling
+
+- **Click Events**: Handled individually by BreadcrumbLink components
+- **Navigation**: Integrates with routing libraries (Next.js, React Router) through the `asChild` prop
+- **Keyboard Navigation**: Inherits standard link keyboard behavior for accessibility
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always use the complete component hierarchy** - Breadcrumb → BreadcrumbList → BreadcrumbItem → BreadcrumbLink/BreadcrumbPage
+- **Place current page last** - Use BreadcrumbPage for the final item to indicate current location
+- **Include separators between items** - Use BreadcrumbSeparator to provide clear visual hierarchy
+- **Integrate with your routing system** - Use `asChild` prop with Next.js Link or React Router Link components
+- **Consider mobile responsiveness** - Use BreadcrumbEllipsis to handle overflow on smaller screens
+
+### Accessibility
+
+- **Semantic navigation landmark** - The root Breadcrumb component provides `aria-label="breadcrumb"` for screen readers
+- **Proper list structure** - BreadcrumbList creates an ordered list that screen readers can navigate
+- **Current page indication** - BreadcrumbPage includes `aria-current="page"` and `aria-disabled="true"`
+- **Hidden decorative elements** - Separators include `aria-hidden="true"` and `role="presentation"`
+- **Keyboard navigation** - All interactive elements support standard keyboard navigation patterns
+
+### Performance
+
+- **Minimal re-renders** - Components are stateless and don't trigger unnecessary re-renders
+- **Efficient DOM structure** - Uses semantic HTML elements without wrapper divs
+- **CSS-only styling** - Visual effects are handled through CSS classes rather than JavaScript
+
+## Common Patterns
+
+### Pattern 1: Dynamic Breadcrumb from Router
+
+```tsx
+import { useRouter } from "next/router";
+
+function DynamicBreadcrumb() {
+  const router = useRouter();
+  const pathSegments = router.asPath.split("/").filter(Boolean);
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        {pathSegments.map((segment, index) => {
+          const href = "/" + pathSegments.slice(0, index + 1).join("/");
+          const isLast = index === pathSegments.length - 1;
+
+          return (
+            <React.Fragment key={segment}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{segment}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink href={href}>{segment}</BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </React.Fragment>
+          );
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+```
+
+### Pattern 2: Breadcrumb with Overflow Management
+
+```tsx
+function CollapsibleBreadcrumb({ items }) {
+  const [showAll, setShowAll] = useState(false);
+  const maxVisible = 3;
+
+  if (items.length <= maxVisible) {
+    return <StandardBreadcrumb items={items} />;
+  }
+
+  const visibleItems = showAll ? items : [items[0], ...items.slice(-2)];
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href={items[0].href}>{items[0].label}</BreadcrumbLink>
+        </BreadcrumbItem>
+
+        {!showAll && items.length > maxVisible && (
+          <>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <button
+                onClick={() => setShowAll(true)}
+                className="p-0 border-0 bg-transparent"
+              >
+                <BreadcrumbEllipsis />
+              </button>
+            </BreadcrumbItem>
+          </>
+        )}
+
+        {visibleItems.slice(1).map((item, index) => (
+          <React.Fragment key={item.href}>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              {item.isCurrentPage ? (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+```

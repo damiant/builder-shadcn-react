@@ -1,0 +1,788 @@
+# Table Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate table functionality with required hierarchical structure
+
+### When to Use
+
+Table components are essential for displaying structured data in a clear, scannable format. Use tables when you need to:
+
+- Present tabular data with rows and columns of related information
+- Display datasets where users need to compare values across different records
+- Create data tables with sortable columns, pagination, or filtering
+- Show relational data where the structure itself conveys meaning
+- Build admin interfaces, dashboards, or data management screens
+- Present financial data, analytics, or any content requiring precise alignment
+- Enable bulk operations on multiple records with checkboxes or selection
+
+### Architecture
+
+**Critical/Strong Coupling**: The Table component group follows a strict hierarchical structure that mirrors semantic HTML table elements. Components must be used in the correct parent-child relationships to maintain both semantic meaning and proper styling. The structure is enforced through CSS selectors that target specific component combinations.
+
+### Component Interdependencies
+
+The Table component group requires a specific hierarchical structure:
+
+- **Table** serves as the root container providing the scrollable wrapper and base table element
+- **TableHeader/TableBody/TableFooter** define the three main sections of the table structure
+- **TableRow** components must be children of header, body, or footer sections
+- **TableHead** cells must be used within TableHeader rows for column headings
+- **TableCell** components must be used within TableBody or TableFooter rows for data
+- **TableCaption** provides optional accessibility context for the entire table
+- CSS styling relies on proper component nesting for border management and hover effects
+
+## Components
+
+### Table {Primary Component}
+
+The foundational container component that creates the semantic table structure and provides overflow handling.
+
+**Purpose:** Creates a scrollable wrapper around the actual HTML table element, providing responsive behavior and base table styling.
+
+**Interface:**
+
+```typescript
+interface TableProps extends React.ComponentProps<"table"> {
+  className?: string;
+  children: React.ReactNode; // Required: TableHeader, TableBody, TableFooter, TableCaption
+}
+```
+
+**Provides:**
+
+- Responsive horizontal scrolling wrapper
+- Base table styling with consistent typography
+- Foundation for child component styling through CSS selectors
+
+**Usage Example:**
+
+```tsx
+import { Table } from "@/components/ui/table";
+
+function BasicTable() {
+  return (
+    <Table>{/* TableHeader, TableBody, and other table components */}</Table>
+  );
+}
+```
+
+### TableHeader {Structural Component}
+
+Defines the header section of the table containing column headings.
+
+**Purpose:** Creates the semantic `<thead>` element with styling for table headers and manages borders between header and body sections.
+
+**Interface:**
+
+```typescript
+interface TableHeaderProps extends React.ComponentProps<"thead"> {
+  className?: string;
+  children: React.ReactNode; // Required: TableRow components containing TableHead cells
+}
+```
+
+**Context Dependencies:** Must be used within a Table component
+**Parent Requirements:** Requires Table as parent component
+
+**Usage Example:**
+
+```tsx
+import { Table, TableHeader, TableRow, TableHead } from "@/components/ui/table";
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Role</TableHead>
+    </TableRow>
+  </TableHeader>
+</Table>;
+```
+
+### TableBody {Structural Component}
+
+Defines the main content section of the table containing data rows.
+
+**Purpose:** Creates the semantic `<tbody>` element with styling that manages row borders and ensures the last row doesn't have a bottom border.
+
+**Interface:**
+
+```typescript
+interface TableBodyProps extends React.ComponentProps<"tbody"> {
+  className?: string;
+  children: React.ReactNode; // Required: TableRow components containing TableCell elements
+}
+```
+
+**Context Dependencies:** Must be used within a Table component
+**Parent Requirements:** Requires Table as parent component
+
+**Usage Example:**
+
+```tsx
+<Table>
+  <TableBody>
+    <TableRow>
+      <TableCell>John Doe</TableCell>
+      <TableCell>john@example.com</TableCell>
+      <TableCell>Admin</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+### TableFooter {Structural Component}
+
+Defines the footer section of the table, typically used for summaries or totals.
+
+**Purpose:** Creates the semantic `<tfoot>` element with distinctive styling including background color and font weight for summary information.
+
+**Interface:**
+
+```typescript
+interface TableFooterProps extends React.ComponentProps<"tfoot"> {
+  className?: string;
+  children: React.ReactNode; // Required: TableRow components containing TableCell elements
+}
+```
+
+**Context Dependencies:** Must be used within a Table component
+**Parent Requirements:** Requires Table as parent component
+
+**Usage Example:**
+
+```tsx
+<Table>
+  <TableFooter>
+    <TableRow>
+      <TableCell colSpan={2}>Total</TableCell>
+      <TableCell>$1,250.00</TableCell>
+    </TableRow>
+  </TableFooter>
+</Table>
+```
+
+### TableRow {Row Component}
+
+Creates individual rows within table sections with hover effects and selection states.
+
+**Purpose:** Provides the semantic `<tr>` element with interactive styling including hover effects, selection states, and consistent border management.
+
+**Interface:**
+
+```typescript
+interface TableRowProps extends React.ComponentProps<"tr"> {
+  className?: string;
+  children: React.ReactNode; // Required: TableHead (in header) or TableCell (in body/footer) components
+  "data-state"?: "selected" | undefined; // Optional: Selection state for highlighting
+}
+```
+
+**Context Dependencies:** Must be used within TableHeader, TableBody, or TableFooter
+**Parent Requirements:** Requires TableHeader, TableBody, or TableFooter as parent
+
+**Usage Example:**
+
+```tsx
+<TableBody>
+  <TableRow data-state="selected">
+    <TableCell>Selected row content</TableCell>
+  </TableRow>
+  <TableRow>
+    <TableCell>Regular row content</TableCell>
+  </TableRow>
+</TableBody>
+```
+
+### TableHead {Header Cell Component}
+
+Creates header cells within table header rows, designed for column headings and controls.
+
+**Purpose:** Provides the semantic `<th>` element with styling optimized for column headers, including special handling for checkbox controls and consistent alignment.
+
+**Interface:**
+
+```typescript
+interface TableHeadProps extends React.ComponentProps<"th"> {
+  className?: string;
+  children: React.ReactNode; // Typically column names, sort controls, or selection checkboxes
+}
+```
+
+**Context Dependencies:** Must be used within TableRow that is inside TableHeader
+**Parent Requirements:** Requires TableRow (within TableHeader) as parent
+
+**Usage Example:**
+
+```tsx
+<TableHeader>
+  <TableRow>
+    <TableHead>
+      <Checkbox /> {/* Special styling for checkbox controls */}
+    </TableHead>
+    <TableHead>Product Name</TableHead>
+    <TableHead>Price</TableHead>
+    <TableHead className="text-right">Actions</TableHead>
+  </TableRow>
+</TableHeader>
+```
+
+### TableCell {Data Cell Component}
+
+Creates data cells within table body or footer rows for displaying content.
+
+**Purpose:** Provides the semantic `<td>` element with styling optimized for data display, including special handling for interactive elements and consistent alignment.
+
+**Interface:**
+
+```typescript
+interface TableCellProps extends React.ComponentProps<"td"> {
+  className?: string;
+  children: React.ReactNode; // Data content, interactive elements, or formatted values
+}
+```
+
+**Context Dependencies:** Must be used within TableRow that is inside TableBody or TableFooter
+**Parent Requirements:** Requires TableRow (within TableBody or TableFooter) as parent
+
+**Usage Example:**
+
+```tsx
+<TableBody>
+  <TableRow>
+    <TableCell>
+      <Checkbox />
+    </TableCell>
+    <TableCell className="font-medium">Product Name</TableCell>
+    <TableCell>$29.99</TableCell>
+    <TableCell className="text-right">
+      <Button size="sm">Edit</Button>
+    </TableCell>
+  </TableRow>
+</TableBody>
+```
+
+### TableCaption {Accessibility Component}
+
+Provides a caption for the table to describe its purpose and content for accessibility.
+
+**Purpose:** Creates the semantic `<caption>` element with styling for describing the table's content, particularly important for screen readers and accessibility compliance.
+
+**Interface:**
+
+```typescript
+interface TableCaptionProps extends React.ComponentProps<"caption"> {
+  className?: string;
+  children: React.ReactNode; // Descriptive text about the table's purpose or content
+}
+```
+
+**Context Dependencies:** Must be used within Table component
+**Parent Requirements:** Requires Table as direct parent
+
+**Usage Example:**
+
+```tsx
+<Table>
+  <TableCaption>
+    A list of your recent orders and their current status.
+  </TableCaption>
+  <TableHeader>{/* Table header content */}</TableHeader>
+  <TableBody>{/* Table body content */}</TableBody>
+</Table>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+
+// Minimal required structure
+function BasicTable() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>John Doe</TableCell>
+          <TableCell>Active</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Jane Smith</TableCell>
+          <TableCell>Inactive</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+
+// Complete table with all features
+function AdvancedTable() {
+  return (
+    <Table>
+      <TableCaption>
+        Customer orders from the last 30 days with totals
+      </TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>
+            <Checkbox />
+          </TableHead>
+          <TableHead>Order ID</TableHead>
+          <TableHead>Customer</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow data-state="selected">
+          <TableCell>
+            <Checkbox checked />
+          </TableCell>
+          <TableCell className="font-medium">#12345</TableCell>
+          <TableCell>John Doe</TableCell>
+          <TableCell>$125.00</TableCell>
+          <TableCell>Completed</TableCell>
+          <TableCell className="text-right">
+            <Button size="sm" variant="outline">
+              View
+            </Button>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>
+            <Checkbox />
+          </TableCell>
+          <TableCell className="font-medium">#12346</TableCell>
+          <TableCell>Jane Smith</TableCell>
+          <TableCell>$87.50</TableCell>
+          <TableCell>Processing</TableCell>
+          <TableCell className="text-right">
+            <Button size="sm" variant="outline">
+              View
+            </Button>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={3}>Total Orders</TableCell>
+          <TableCell>$212.50</TableCell>
+          <TableCell colSpan={2}></TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  );
+}
+```
+
+### Common Variations
+
+#### Data Table with Actions
+
+```tsx
+function DataTable({ data, onEdit, onDelete }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead className="w-24">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((user) => (
+          <TableRow key={user.id}>
+            <TableCell className="font-medium">{user.name}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.role}</TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(user.id)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDelete(user.id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+```
+
+#### Selectable Table with Checkboxes
+
+```tsx
+function SelectableTable({ data, selectedRows, onSelectRow, onSelectAll }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>
+            <Checkbox
+              checked={selectedRows.length === data.length}
+              onCheckedChange={onSelectAll}
+            />
+          </TableHead>
+          <TableHead>Product</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Price</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((product) => (
+          <TableRow
+            key={product.id}
+            data-state={
+              selectedRows.includes(product.id) ? "selected" : undefined
+            }
+          >
+            <TableCell>
+              <Checkbox
+                checked={selectedRows.includes(product.id)}
+                onCheckedChange={() => onSelectRow(product.id)}
+              />
+            </TableCell>
+            <TableCell className="font-medium">{product.name}</TableCell>
+            <TableCell>{product.category}</TableCell>
+            <TableCell>${product.price.toFixed(2)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+```
+
+#### Financial/Summary Table
+
+```tsx
+function FinancialTable({ transactions, total }) {
+  return (
+    <Table>
+      <TableCaption>
+        Monthly financial summary with transaction details
+      </TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Date</TableHead>
+          <TableHead>Description</TableHead>
+          <TableHead className="text-right">Amount</TableHead>
+          <TableHead className="text-right">Balance</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {transactions.map((transaction) => (
+          <TableRow key={transaction.id}>
+            <TableCell>{transaction.date}</TableCell>
+            <TableCell>{transaction.description}</TableCell>
+            <TableCell
+              className={`text-right ${
+                transaction.amount > 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {transaction.amount > 0 ? "+" : ""}$
+              {Math.abs(transaction.amount).toFixed(2)}
+            </TableCell>
+            <TableCell className="text-right font-medium">
+              ${transaction.balance.toFixed(2)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={3} className="font-medium">
+            Total Balance
+          </TableCell>
+          <TableCell className="text-right font-medium">
+            ${total.toFixed(2)}
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+Tables follow a strict hierarchical structure where:
+
+- The Table component provides the container and responsive wrapper
+- Section components (Header, Body, Footer) organize content into semantic areas
+- Row components manage horizontal layout and interactive states
+- Cell components handle individual data presentation and alignment
+
+### Structural Requirements
+
+The table components enforce proper HTML table structure through:
+
+- **Semantic nesting**: Components mirror HTML table element relationships
+- **CSS selector dependencies**: Styling relies on proper component hierarchy
+- **Accessibility compliance**: Screen readers depend on correct table structure
+
+### Event Handling
+
+Tables don't manage global state but provide hooks for:
+
+- Row selection through `data-state` attributes and checkbox integration
+- Interactive cells containing buttons, links, or form controls
+- Hover effects and visual feedback through CSS classes
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Maintain semantic structure**: Always use TableHead in headers and TableCell in body/footer sections
+- **Leverage selection states**: Use `data-state="selected"` on TableRow for visual selection feedback
+- **Align content appropriately**: Use text alignment classes for numerical data and actions
+- **Handle responsive overflow**: The Table component provides horizontal scrolling for wide tables
+- **Include accessibility features**: Use TableCaption to describe complex tables for screen readers
+
+### Accessibility
+
+- Tables automatically provide proper semantic structure with `<table>`, `<thead>`, `<tbody>`, `<tfoot>` elements
+- Use TableCaption for complex tables that need description
+- Ensure proper heading hierarchy with TableHead components
+- Include proper labeling for interactive elements like checkboxes and buttons
+- Consider ARIA attributes for sortable columns or complex data relationships
+
+### Performance
+
+- Tables are lightweight and don't introduce React context overhead
+- Use virtualization libraries for very large datasets (>1000 rows)
+- Consider pagination or filtering for better user experience with large data sets
+- Optimize re-renders by using proper key props and memoization for complex cell content
+
+## Common Patterns
+
+### Pattern 1: CRUD Data Table
+
+```tsx
+// Ideal for admin interfaces, data management, or content editing
+function CRUDTable({ data, onCreate, onEdit, onDelete }) {
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between">
+        <h2>Data Management</h2>
+        <Button onClick={onCreate}>Add New</Button>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Checkbox
+                checked={selectedItems.length === data.length}
+                onCheckedChange={(checked) => {
+                  setSelectedItems(checked ? data.map((item) => item.id) : []);
+                }}
+              />
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedItems.includes(item.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedItems([...selectedItems, item.id]);
+                    } else {
+                      setSelectedItems(
+                        selectedItems.filter((id) => id !== item.id),
+                      );
+                    }
+                  }}
+                />
+              </TableCell>
+              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell>{item.status}</TableCell>
+              <TableCell>{item.createdAt}</TableCell>
+              <TableCell className="text-right">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(item)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDelete(item.id)}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Analytics Dashboard Table
+
+```tsx
+// Perfect for metrics, reporting, or dashboard displays
+function AnalyticsTable({ metrics, period }) {
+  return (
+    <Table>
+      <TableCaption>
+        Performance metrics for {period} with comparison to previous period
+      </TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Metric</TableHead>
+          <TableHead className="text-right">Current</TableHead>
+          <TableHead className="text-right">Previous</TableHead>
+          <TableHead className="text-right">Change</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {metrics.map((metric) => {
+          const changePercent =
+            ((metric.current - metric.previous) / metric.previous) * 100;
+          const isPositive = changePercent > 0;
+
+          return (
+            <TableRow key={metric.name}>
+              <TableCell className="font-medium">{metric.name}</TableCell>
+              <TableCell className="text-right">
+                {metric.current.toLocaleString()}
+              </TableCell>
+              <TableCell className="text-right">
+                {metric.previous.toLocaleString()}
+              </TableCell>
+              <TableCell
+                className={`text-right ${isPositive ? "text-green-600" : "text-red-600"}`}
+              >
+                {isPositive ? "+" : ""}
+                {changePercent.toFixed(1)}%
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={4} className="text-center">
+            Data updated every 5 minutes
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  );
+}
+```
+
+### Pattern 3: Responsive Data Display
+
+```tsx
+// Excellent for mobile-friendly data presentation
+function ResponsiveTable({ orders }) {
+  return (
+    <div className="border rounded-lg">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Order</TableHead>
+            <TableHead className="hidden md:table-cell">Customer</TableHead>
+            <TableHead className="hidden sm:table-cell">Date</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order) => (
+            <TableRow key={order.id}>
+              <TableCell>
+                <div>
+                  <div className="font-medium">#{order.id}</div>
+                  <div className="text-sm text-muted-foreground md:hidden">
+                    {order.customerName}
+                  </div>
+                  <div className="text-sm text-muted-foreground sm:hidden">
+                    {order.date}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                {order.customerName}
+              </TableCell>
+              <TableCell className="hidden sm:table-cell">
+                {order.date}
+              </TableCell>
+              <TableCell className="text-right font-medium">
+                ${order.amount.toFixed(2)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+```

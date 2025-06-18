@@ -1,0 +1,331 @@
+# Sonner Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate toast notifications
+
+### When to Use
+
+Use Sonner when you need to provide user feedback through toast notifications. This is ideal for:
+
+- Success messages after user actions (form submissions, data saves, deletions)
+- Error notifications when operations fail
+- Information messages to guide users
+- Loading states and progress updates
+- Warning messages for potentially destructive actions
+
+Toast notifications are non-blocking and appear temporarily on screen, making them perfect for communicating status changes without interrupting the user's workflow.
+
+### Architecture
+
+**No Coupling**: This is a standalone component that works independently. The Toaster component is a wrapper around the external "sonner" library that provides theme integration and consistent styling with your design system.
+
+### Component Interdependencies
+
+This component has no internal dependencies within the component group. It relies on:
+
+- `next-themes` for theme detection and integration
+- `sonner` library for the underlying toast functionality
+- CSS custom properties for theming integration
+
+## Components
+
+### Toaster
+
+**Purpose:** Provides the toast notification system for your application. This component should be placed once at the root level of your app to enable toast notifications throughout your application.
+
+**Interface:**
+
+```typescript
+interface ToasterProps {
+  // All props from the underlying sonner library
+  position?:
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-center"
+    | "bottom-right";
+  hotkey?: string[];
+  richColors?: boolean;
+  expand?: boolean;
+  duration?: number;
+  gap?: number;
+  visibleToasts?: number;
+  closeButton?: boolean;
+  toastOptions?: {
+    className?: string;
+    style?: React.CSSProperties;
+    duration?: number;
+    unstyled?: boolean;
+  };
+  className?: string;
+  style?: React.CSSProperties;
+  offset?: string | number;
+  theme?: "light" | "dark" | "system";
+  // Additional props are passed through to the underlying Sonner component
+}
+```
+
+**Dependencies:**
+
+- `next-themes` for automatic theme detection
+- `sonner` library for toast functionality
+
+**Usage Example:**
+
+```tsx
+import { Toaster } from "@/components/ui/sonner";
+
+function App() {
+  return (
+    <div>
+      {/* Your app content */}
+      <main>{/* App components */}</main>
+
+      {/* Place Toaster at root level */}
+      <Toaster />
+    </div>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Setup
+
+```tsx
+import { Toaster } from "@/components/ui/sonner";
+
+// In your root layout or app component
+function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
+```
+
+### Using Toast Notifications
+
+```tsx
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+
+function Example() {
+  const handleSuccess = () => {
+    toast.success("Operation completed successfully!");
+  };
+
+  const handleError = () => {
+    toast.error("Something went wrong. Please try again.");
+  };
+
+  const handleInfo = () => {
+    toast.info("Here is some helpful information.");
+  };
+
+  const handleWarning = () => {
+    toast.warning("Please review before proceeding.");
+  };
+
+  const handleLoading = () => {
+    const loadingToast = toast.loading("Processing...");
+
+    // Simulate async operation
+    setTimeout(() => {
+      toast.success("Complete!", { id: loadingToast });
+    }, 2000);
+  };
+
+  return (
+    <div className="space-x-4">
+      <Button onClick={handleSuccess}>Success Toast</Button>
+      <Button onClick={handleError} variant="destructive">
+        Error Toast
+      </Button>
+      <Button onClick={handleInfo} variant="outline">
+        Info Toast
+      </Button>
+      <Button onClick={handleWarning} variant="secondary">
+        Warning Toast
+      </Button>
+      <Button onClick={handleLoading}>Loading Toast</Button>
+    </div>
+  );
+}
+```
+
+### Advanced Usage with Custom Options
+
+```tsx
+import { toast } from "sonner";
+
+function AdvancedExample() {
+  const handleCustomToast = () => {
+    toast("Custom message", {
+      description: "This toast has a description",
+      action: {
+        label: "Undo",
+        onClick: () => console.log("Undo clicked"),
+      },
+      duration: 5000,
+    });
+  };
+
+  const handlePromiseToast = async () => {
+    const myPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (Math.random() > 0.5) {
+          resolve({ name: "John Doe" });
+        } else {
+          reject(new Error("Failed to load user"));
+        }
+      }, 2000);
+    });
+
+    toast.promise(myPromise, {
+      loading: "Loading user...",
+      success: (data) => `Welcome ${data.name}!`,
+      error: "Error loading user",
+    });
+  };
+
+  return (
+    <div className="space-x-4">
+      <Button onClick={handleCustomToast}>Custom Toast</Button>
+      <Button onClick={handlePromiseToast}>Promise Toast</Button>
+    </div>
+  );
+}
+```
+
+### Custom Positioning and Configuration
+
+```tsx
+import { Toaster } from "@/components/ui/sonner";
+
+function AppWithCustomToaster() {
+  return (
+    <div>
+      <main>{/* App content */}</main>
+
+      <Toaster
+        position="top-right"
+        expand={true}
+        richColors={true}
+        closeButton={true}
+        duration={4000}
+        gap={12}
+        visibleToasts={5}
+        toastOptions={{
+          className: "my-custom-toast",
+          style: {
+            fontSize: "14px",
+          },
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- Place the Toaster component once at the root level of your application (typically in layout.tsx or \_app.tsx)
+- Use appropriate toast types (success, error, info, warning) to convey the right message tone
+- Keep toast messages concise and actionable - users should understand what happened and what they can do next
+- Use toast.promise() for async operations to provide immediate feedback with loading states
+- Avoid showing too many toasts simultaneously - the default visibleToasts limit helps manage this
+
+### Accessibility
+
+- Toast notifications are announced to screen readers through ARIA live regions
+- Each toast type has appropriate semantic meaning (success, error, warning, info)
+- Toasts automatically dismiss after a timeout but can be manually closed
+- Keyboard navigation is supported for interactive elements within toasts
+- Focus management is handled automatically when toasts appear and disappear
+
+### Performance
+
+- The Toaster component is lightweight and renders only when toasts are active
+- Toast animations are optimized for smooth performance
+- Automatic cleanup prevents memory leaks from dismissed toasts
+- Theme integration is efficient with CSS custom properties
+
+## Common Patterns
+
+### Form Submission Feedback
+
+```tsx
+import { toast } from "sonner";
+
+async function handleFormSubmit(formData: FormData) {
+  try {
+    const result = await submitForm(formData);
+    toast.success("Form submitted successfully!");
+    // Redirect or update UI
+  } catch (error) {
+    toast.error("Failed to submit form. Please try again.");
+  }
+}
+```
+
+### Deletion Confirmation
+
+```tsx
+import { toast } from "sonner";
+
+function handleDelete(itemId: string) {
+  toast("Item deleted", {
+    description: "The item has been removed from your list.",
+    action: {
+      label: "Undo",
+      onClick: () => restoreItem(itemId),
+    },
+  });
+}
+```
+
+### Real-time Updates
+
+```tsx
+import { toast } from "sonner";
+
+// For WebSocket or real-time data updates
+function handleRealTimeUpdate(message: string) {
+  toast.info(message, {
+    duration: 2000, // Shorter duration for frequent updates
+    position: "bottom-right", // Less intrusive position
+  });
+}
+```
+
+### Error Handling with Retry
+
+```tsx
+import { toast } from "sonner";
+
+async function handleApiCall() {
+  try {
+    await apiCall();
+    toast.success("Data updated successfully");
+  } catch (error) {
+    toast.error("Update failed", {
+      description: "There was a problem updating your data.",
+      action: {
+        label: "Retry",
+        onClick: () => handleApiCall(),
+      },
+    });
+  }
+}
+```

@@ -1,0 +1,445 @@
+# Tabs Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate tabs functionality
+
+### When to Use
+
+Tabs components are ideal for organizing related content into separate views that users can switch between without navigating to different pages. Use tabs when you need to:
+
+- Create content sections that are at the same level of hierarchy and mutually exclusive
+- Build settings panels with different configuration categories
+- Organize dashboard content into different data views or time periods
+- Design product pages with details, specifications, reviews, and related items
+- Implement navigation between related content areas in a compact interface
+- Create multi-step forms where users can navigate between completed steps
+- Display different chart views or data presentations for the same dataset
+- Build interfaces where screen space is limited but multiple content areas are needed
+
+### Architecture
+
+**Critical/Strong Coupling**: The Tabs component group follows a strict hierarchical composition pattern where components must be used together in a specific parent-child relationship. The root Tabs component manages state and accessibility context, while child components depend on this context to function properly.
+
+### Component Interdependencies
+
+The Tabs component group uses a required compositional hierarchy:
+
+- **Tabs** serves as the root container that provides state management, accessibility context, and keyboard navigation
+- **TabsList** contains the tab triggers and must be a child of Tabs, providing the navigation bar styling
+- **TabsTrigger** represents individual tab buttons and must be direct children of TabsList
+- **TabsContent** contains the content for each tab panel and must be direct children of Tabs
+- Components communicate through Radix UI's compound component pattern and shared ARIA attributes
+- Tab activation and content visibility are automatically managed by the root Tabs component
+- Keyboard navigation (arrow keys, Home, End) is handled by the TabsList component
+
+## Components
+
+### Tabs {Primary Component}
+
+The foundational container component that manages the tabs' state, behavior, and accessibility features.
+
+**Purpose:** Creates the root tabs container with state management for active tab selection, accessibility context, and keyboard navigation coordination between tab triggers and content panels.
+
+**Interface:**
+
+```typescript
+interface TabsProps extends React.ComponentProps<typeof TabsPrimitive.Root> {
+  defaultValue?: string; // Default active tab for uncontrolled usage
+  value?: string; // Controlled value for active tab
+  onValueChange?: (value: string) => void; // Callback when active tab changes
+  orientation?: "horizontal" | "vertical"; // Layout orientation
+  dir?: "ltr" | "rtl"; // Text direction
+  activationMode?: "automatic" | "manual"; // Whether tabs activate on focus or click
+  className?: string;
+  children: React.ReactNode; // Required TabsList and TabsContent components
+}
+```
+
+**Dependencies:** None - this is the root component
+**Provides:** State management context, accessibility attributes, and focus coordination to all child components
+
+**Usage Example:**
+
+```tsx
+import { Tabs } from "@/components/ui/tabs";
+
+function BasicTabs() {
+  return (
+    <Tabs defaultValue="tab1" className="w-full">
+      {/* TabsList and TabsContent components go here */}
+    </Tabs>
+  );
+}
+
+function ControlledTabs() {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* TabsList and TabsContent components go here */}
+    </Tabs>
+  );
+}
+```
+
+### TabsList {Navigation Container}
+
+The container component that holds tab triggers and provides the navigation bar styling.
+
+**Purpose:** Creates a styled container for tab triggers with proper spacing, background, and responsive behavior. Provides the visual foundation for the tab navigation interface.
+
+**Interface:**
+
+```typescript
+interface TabsListProps
+  extends React.ComponentProps<typeof TabsPrimitive.List> {
+  className?: string;
+  children: React.ReactNode; // Required TabsTrigger components
+}
+```
+
+**Context Dependencies:** Must be used within a Tabs component to access tab state management
+**Parent Requirements:** Must be a direct child of the Tabs component
+
+**Usage Example:**
+
+```tsx
+import { Tabs, TabsList } from "@/components/ui/tabs";
+
+function TabsWithList() {
+  return (
+    <Tabs defaultValue="tab1">
+      <TabsList className="grid w-full grid-cols-2">
+        {/* TabsTrigger components go here */}
+      </TabsList>
+      {/* TabsContent components go here */}
+    </Tabs>
+  );
+}
+```
+
+### TabsTrigger {Tab Button}
+
+Individual tab buttons that users click to switch between different content panels.
+
+**Purpose:** Creates interactive tab buttons with proper styling, focus management, and accessibility attributes. Handles the visual active/inactive states and communicates with the parent Tabs component to manage content visibility.
+
+**Interface:**
+
+```typescript
+interface TabsTriggerProps
+  extends React.ComponentProps<typeof TabsPrimitive.Trigger> {
+  value: string; // Required unique identifier for this tab
+  disabled?: boolean; // Whether this tab is disabled
+  className?: string;
+  children: React.ReactNode; // Tab label content
+}
+```
+
+**Context Dependencies:** Must be used within TabsList to access tab state and styling context
+**Parent Requirements:** Must be a direct child of TabsList component
+
+**Usage Example:**
+
+```tsx
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+function TabsWithTriggers() {
+  return (
+    <Tabs defaultValue="overview">
+      <TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsTrigger value="reports" disabled>
+          Reports
+        </TabsTrigger>
+      </TabsList>
+      {/* TabsContent components go here */}
+    </Tabs>
+  );
+}
+```
+
+### TabsContent {Content Panel}
+
+Container components that hold the content for each tab, shown when the corresponding tab is active.
+
+**Purpose:** Creates content panels that are conditionally displayed based on the active tab state. Provides proper accessibility attributes and manages content visibility with appropriate animations.
+
+**Interface:**
+
+```typescript
+interface TabsContentProps
+  extends React.ComponentProps<typeof TabsPrimitive.Content> {
+  value: string; // Required unique identifier matching a TabsTrigger value
+  forceMount?: boolean; // Keep content mounted even when inactive
+  className?: string;
+  children: React.ReactNode; // Panel content
+}
+```
+
+**Context Dependencies:** Must be used within Tabs to access active tab state and visibility management
+**Parent Requirements:** Must be a direct child of the Tabs component
+
+**Usage Example:**
+
+```tsx
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+
+function TabsWithContent() {
+  return (
+    <Tabs defaultValue="overview">
+      {/* TabsList with TabsTrigger components here */}
+      <TabsContent value="overview" className="mt-4">
+        <div>Overview content goes here</div>
+      </TabsContent>
+      <TabsContent value="analytics" className="mt-4">
+        <div>Analytics dashboard content</div>
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+// Minimal required structure
+function BasicTabsExample() {
+  return (
+    <Tabs defaultValue="tab1" className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+        <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+      </TabsList>
+      <TabsContent value="tab1">
+        <p>Content for tab 1</p>
+      </TabsContent>
+      <TabsContent value="tab2">
+        <p>Content for tab 2</p>
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Complex usage with cards and controlled state
+function AdvancedTabsExample() {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsTrigger value="settings">Settings</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Project Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Dashboard overview content with charts and metrics.</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="analytics" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Detailed analytics and reporting content.</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="settings" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Project Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Configuration options and preferences.</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// Vertical tabs layout
+function VerticalTabs() {
+  return (
+    <Tabs defaultValue="tab1" orientation="vertical" className="flex">
+      <TabsList className="flex-col h-full">
+        <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+        <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+      </TabsList>
+      <div className="flex-1 ml-4">
+        <TabsContent value="tab1">Vertical tab content 1</TabsContent>
+        <TabsContent value="tab2">Vertical tab content 2</TabsContent>
+      </div>
+    </Tabs>
+  );
+}
+
+// Tabs with icons and badges
+function IconTabs() {
+  return (
+    <Tabs defaultValue="messages">
+      <TabsList>
+        <TabsTrigger value="messages" className="flex items-center gap-2">
+          <MessageCircle className="h-4 w-4" />
+          Messages
+          <Badge variant="secondary">3</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          Notifications
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="messages">Messages content</TabsContent>
+      <TabsContent value="notifications">Notifications content</TabsContent>
+    </Tabs>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Tabs component manages a single piece of state (the active tab value) that flows down to all child components:
+
+- **Tabs → TabsList**: Provides keyboard navigation context and accessibility attributes
+- **Tabs → TabsTrigger**: Provides active state, click handlers, and ARIA relationships
+- **Tabs → TabsContent**: Provides visibility state and content panel associations
+- **TabsTrigger → Tabs**: Communicates tab selection changes via click events
+- **Tabs State**: Determines which TabsContent panel is visible and which TabsTrigger appears active
+
+### Context Sharing
+
+The Tabs component uses Radix UI's compound component pattern to share:
+
+- **Active tab state**: Managed by the root Tabs component and consumed by triggers and content
+- **Tab registration**: Each TabsTrigger and TabsContent registers with the root component
+- **Accessibility context**: ARIA attributes and relationships are automatically managed
+- **Keyboard navigation**: Arrow key navigation between triggers is handled by TabsList
+
+### Event Handling
+
+Event flow follows a predictable pattern:
+
+1. **User interaction**: Click on TabsTrigger or keyboard navigation
+2. **Event propagation**: TabsTrigger communicates selection to parent Tabs component
+3. **State update**: Tabs component updates active tab state
+4. **UI updates**: All child components re-render with new active state
+5. **Accessibility**: Focus management and ARIA states are automatically updated
+
+## Best Practices
+
+### Usage Guidelines
+
+- Always provide a default active tab using `defaultValue` for uncontrolled usage or manage state with `value` and `onValueChange` for controlled scenarios
+- Use descriptive tab labels that clearly indicate the content type - avoid generic terms like "Tab 1" or "More"
+- Limit the number of tabs to 5-7 for optimal usability; consider alternative navigation patterns for larger content sets
+- Ensure tab content is substantial enough to warrant separate panels - don't use tabs for minimal content differences
+- Maintain consistent content structure across all tab panels to provide predictable user experience
+- Place the most important or frequently accessed content in the first tab position
+
+### Accessibility
+
+- Tab triggers automatically include proper ARIA attributes (`role="tab"`, `aria-selected`, `aria-controls`)
+- Content panels are properly associated with their triggers via `aria-labelledby` and `id` relationships
+- Keyboard navigation follows established patterns: Arrow keys move between tabs, Enter/Space activate tabs
+- Focus management ensures logical tab order and proper focus indication when switching between tabs
+- Screen readers announce tab position and content when navigating between panels
+
+### Performance
+
+- Content panels are conditionally rendered - inactive tab content is not in the DOM by default
+- Use `forceMount` on TabsContent sparingly, only when content needs to maintain state between switches
+- Consider lazy loading or code splitting for tab content that contains heavy components or data
+- Avoid placing expensive computations or API calls in all tab panels simultaneously - load content on demand
+
+## Common Patterns
+
+### Dashboard Tabs Pattern
+
+```tsx
+// Organizing dashboard content into logical sections
+function DashboardTabs() {
+  return (
+    <Tabs defaultValue="overview" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="sales">Sales</TabsTrigger>
+        <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsTrigger value="reports">Reports</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview">
+        <StatsCards />
+        <RecentActivity />
+      </TabsContent>
+
+      <TabsContent value="sales">
+        <SalesChart />
+        <SalesTable />
+      </TabsContent>
+
+      {/* Additional content panels */}
+    </Tabs>
+  );
+}
+```
+
+### Settings Panel Pattern
+
+```tsx
+// Multi-category settings with form sections
+function SettingsPanel() {
+  return (
+    <Tabs defaultValue="general" className="max-w-4xl">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="general">General</TabsTrigger>
+        <TabsTrigger value="security">Security</TabsTrigger>
+        <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        <TabsTrigger value="billing">Billing</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="general" className="mt-6">
+        <GeneralSettingsForm />
+      </TabsContent>
+
+      <TabsContent value="security" className="mt-6">
+        <SecuritySettingsForm />
+      </TabsContent>
+
+      {/* Additional settings forms */}
+    </Tabs>
+  );
+}
+```

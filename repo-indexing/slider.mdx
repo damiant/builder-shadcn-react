@@ -1,0 +1,391 @@
+# Slider Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate slider functionality for selecting numeric values within a specified range. The Slider component provides an accessible, touch-friendly interface for value selection with support for single or multiple values, different orientations, and customizable ranges.
+
+### When to Use
+
+- **Volume Controls**: Audio/video volume adjustment interfaces
+- **Price Range Filters**: E-commerce filtering with min/max price selection
+- **Settings Configuration**: Adjusting numeric settings like brightness, opacity, or quality levels
+- **Data Visualization**: Interactive data exploration with range selection
+- **Form Inputs**: When users need to select values from a continuous range rather than discrete options
+- **Accessibility Requirements**: When you need keyboard navigation and screen reader support for numeric input
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently without requiring other components. It's built on top of Radix UI's Slider primitive and provides a complete slider implementation with styling and accessibility features.
+
+## Components
+
+### Slider
+
+**Purpose:** Provides an interactive slider interface for selecting one or more numeric values within a specified range. Supports both horizontal and vertical orientations with full keyboard navigation and accessibility features.
+
+**Interface:**
+
+```typescript
+interface SliderProps {
+  // Core value management
+  value?: number[]; // Controlled value(s) - array of selected values
+  defaultValue?: number[]; // Initial uncontrolled value(s)
+  onValueChange?: (value: number[]) => void; // Callback fired when value changes during interaction
+  onValueCommit?: (value: number[]) => void; // Callback fired when user finishes changing value
+
+  // Range configuration
+  min?: number; // Minimum selectable value (default: 0)
+  max?: number; // Maximum selectable value (default: 100)
+  step?: number; // Step increment for value changes
+  minStepsBetweenThumbs?: number; // Minimum distance between thumbs in multi-value sliders
+
+  // Behavior configuration
+  disabled?: boolean; // Disables the slider
+  orientation?: "horizontal" | "vertical"; // Slider orientation
+  dir?: "ltr" | "rtl"; // Text direction for layout
+  inverted?: boolean; // Inverts the slider direction
+  name?: string; // Name attribute for form submission
+
+  // Styling
+  className?: string; // Additional CSS classes for customization
+
+  // Standard React props
+  children?: React.ReactNode; // Not typically used, but supported
+}
+```
+
+**Usage Example:**
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+
+function VolumeControl() {
+  const [volume, setVolume] = useState([50]);
+
+  return (
+    <div className="space-y-2">
+      <label htmlFor="volume-slider">Volume: {volume[0]}%</label>
+      <Slider
+        id="volume-slider"
+        value={volume}
+        onValueChange={setVolume}
+        min={0}
+        max={100}
+        step={1}
+        className="w-full"
+      />
+    </div>
+  );
+}
+```
+
+## Integration Patterns
+
+### Single Value Selection
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+import { useState } from "react";
+
+function BrightnessControl() {
+  const [brightness, setBrightness] = useState([75]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between">
+        <label htmlFor="brightness">Brightness</label>
+        <span className="text-sm text-muted-foreground">{brightness[0]}%</span>
+      </div>
+      <Slider
+        id="brightness"
+        value={brightness}
+        onValueChange={setBrightness}
+        min={0}
+        max={100}
+        step={5}
+        className="w-full"
+      />
+    </div>
+  );
+}
+```
+
+### Range Selection (Multiple Values)
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+import { useState } from "react";
+
+function PriceRangeFilter() {
+  const [priceRange, setPriceRange] = useState([25, 75]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between">
+        <label>Price Range</label>
+        <span className="text-sm text-muted-foreground">
+          ${priceRange[0]} - ${priceRange[1]}
+        </span>
+      </div>
+      <Slider
+        value={priceRange}
+        onValueChange={setPriceRange}
+        min={0}
+        max={100}
+        step={1}
+        minStepsBetweenThumbs={5}
+        className="w-full"
+      />
+    </div>
+  );
+}
+```
+
+### Vertical Orientation
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+
+function VerticalVolumeControl() {
+  const [volume, setVolume] = useState([60]);
+
+  return (
+    <div className="flex flex-col items-center space-y-2 h-48">
+      <span className="text-sm">Volume</span>
+      <Slider
+        value={volume}
+        onValueChange={setVolume}
+        orientation="vertical"
+        min={0}
+        max={100}
+        className="h-full"
+      />
+      <span className="text-xs text-muted-foreground">{volume[0]}%</span>
+    </div>
+  );
+}
+```
+
+### Form Integration
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+import { useState } from "react";
+
+function SettingsForm() {
+  const [settings, setSettings] = useState({
+    quality: [80],
+    timeout: [30],
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Settings:", {
+      quality: settings.quality[0],
+      timeout: settings.timeout[0],
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <label htmlFor="quality-slider">
+          Image Quality: {settings.quality[0]}%
+        </label>
+        <Slider
+          id="quality-slider"
+          name="quality"
+          value={settings.quality}
+          onValueChange={(value) =>
+            setSettings((prev) => ({ ...prev, quality: value }))
+          }
+          min={10}
+          max={100}
+          step={10}
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="timeout-slider">Timeout: {settings.timeout[0]}s</label>
+        <Slider
+          id="timeout-slider"
+          name="timeout"
+          value={settings.timeout}
+          onValueChange={(value) =>
+            setSettings((prev) => ({ ...prev, timeout: value }))
+          }
+          min={5}
+          max={60}
+          step={5}
+          className="w-full"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="px-4 py-2 bg-primary text-primary-foreground rounded"
+      >
+        Save Settings
+      </button>
+    </form>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always provide labels**: Use proper labeling for accessibility, either with `htmlFor` attributes or `aria-labelledby`
+- **Show current values**: Display the selected value(s) to provide visual feedback to users
+- **Use appropriate step sizes**: Choose step values that make sense for your use case (e.g., 5% for percentages, 1 for precise controls)
+- **Consider min distance**: For range sliders, use `minStepsBetweenThumbs` to prevent thumbs from overlapping
+- **Provide visual feedback**: Style the component to clearly indicate the selected range and available interactions
+
+### Accessibility
+
+- **Keyboard Navigation**: Fully supports arrow keys for value adjustment and Tab/Shift+Tab for focus management
+- **Screen Reader Support**: Announces current values and provides proper role and state information
+- **ARIA Attributes**: Automatically includes appropriate `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and `aria-orientation`
+- **Focus Management**: Visible focus indicators and proper focus order for multiple thumbs
+- **Touch Support**: Optimized for touch devices with appropriate touch target sizes
+
+### Performance
+
+- **Controlled vs Uncontrolled**: Use `defaultValue` for uncontrolled components to avoid unnecessary re-renders
+- **Debounce rapid changes**: For expensive operations, consider debouncing the `onValueChange` callback
+- **Minimal re-renders**: The component is optimized to minimize re-renders during value changes
+
+## Common Patterns
+
+### Pattern 1: Settings Panel with Multiple Sliders
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+function AudioSettings() {
+  const [volume, setVolume] = useState([75]);
+  const [bass, setBass] = useState([50]);
+  const [treble, setTreble] = useState([50]);
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Audio Settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <label htmlFor="volume">Volume</label>
+            <span className="text-sm text-muted-foreground">{volume[0]}%</span>
+          </div>
+          <Slider
+            id="volume"
+            value={volume}
+            onValueChange={setVolume}
+            min={0}
+            max={100}
+            step={1}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <label htmlFor="bass">Bass</label>
+            <span className="text-sm text-muted-foreground">
+              {bass[0] - 50}
+            </span>
+          </div>
+          <Slider
+            id="bass"
+            value={bass}
+            onValueChange={setBass}
+            min={0}
+            max={100}
+            defaultValue={[50]}
+            step={1}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <label htmlFor="treble">Treble</label>
+            <span className="text-sm text-muted-foreground">
+              {treble[0] - 50}
+            </span>
+          </div>
+          <Slider
+            id="treble"
+            value={treble}
+            onValueChange={setTreble}
+            min={0}
+            max={100}
+            defaultValue={[50]}
+            step={1}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Pattern 2: Interactive Data Filter
+
+```tsx
+import { Slider } from "@/components/ui/slider";
+import { useState, useEffect } from "react";
+
+function DataRangeFilter({
+  data,
+  onFilter,
+}: {
+  data: Array<{ value: number }>;
+  onFilter: (filtered: Array<{ value: number }>) => void;
+}) {
+  const [range, setRange] = useState([0, 100]);
+
+  // Calculate min/max from data
+  const minValue = Math.min(...data.map((item) => item.value));
+  const maxValue = Math.max(...data.map((item) => item.value));
+
+  useEffect(() => {
+    setRange([minValue, maxValue]);
+  }, [minValue, maxValue]);
+
+  useEffect(() => {
+    const filtered = data.filter(
+      (item) => item.value >= range[0] && item.value <= range[1],
+    );
+    onFilter(filtered);
+  }, [range, data, onFilter]);
+
+  return (
+    <div className="space-y-3 p-4 border rounded-lg">
+      <div className="flex justify-between items-center">
+        <label className="font-medium">Filter by Value</label>
+        <span className="text-sm text-muted-foreground">
+          {range[0]} - {range[1]}
+        </span>
+      </div>
+      <Slider
+        value={range}
+        onValueChange={setRange}
+        min={minValue}
+        max={maxValue}
+        step={1}
+        minStepsBetweenThumbs={1}
+        className="w-full"
+      />
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{minValue}</span>
+        <span>{maxValue}</span>
+      </div>
+    </div>
+  );
+}
+```

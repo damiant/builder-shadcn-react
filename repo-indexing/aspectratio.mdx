@@ -1,0 +1,320 @@
+# AspectRatio Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate aspect ratio containers
+
+### When to Use
+
+AspectRatio component is essential for maintaining consistent proportions in responsive designs. Use AspectRatio when you need to:
+
+- Display images with consistent aspect ratios across different screen sizes
+- Create video containers that maintain their proportions
+- Build responsive grid layouts with uniform item dimensions
+- Ensure media content displays correctly regardless of container size
+- Create placeholder containers for dynamic content loading
+- Implement responsive card layouts with consistent proportions
+- Design hero sections or banner areas with fixed aspect ratios
+
+### Architecture
+
+**No Coupling**: AspectRatio is a standalone component that operates independently. It serves as a container that constrains its children to a specified aspect ratio without requiring other components or shared contexts.
+
+## Components
+
+### AspectRatio {Standalone Component}
+
+A container component that maintains a specified aspect ratio for its children, ensuring consistent proportions across different screen sizes and container widths.
+
+**Purpose:** Creates a responsive container that automatically adjusts height based on width while maintaining the specified aspect ratio, perfect for media content and responsive layouts.
+
+**Interface:**
+
+```typescript
+interface AspectRatioProps
+  extends React.ComponentProps<typeof AspectRatioPrimitive.Root> {
+  ratio?: number; // Aspect ratio as width/height (default: 1)
+  asChild?: boolean; // Render as child element instead of div
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Key Features:**
+
+- **Responsive proportions**: Automatically calculates height based on width and ratio
+- **Flexible ratio support**: Accepts any numeric ratio (e.g., 16/9, 4/3, 1, 21/9)
+- **CSS-based implementation**: Uses CSS aspect-ratio property with fallback support
+- **Content preservation**: Maintains child content positioning and sizing
+
+**Usage Example:**
+
+```tsx
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+
+// Basic 16:9 video container
+function VideoContainer() {
+  return (
+    <AspectRatio ratio={16 / 9}>
+      <iframe
+        src="https://www.youtube.com/embed/video-id"
+        className="w-full h-full"
+        allowFullScreen
+      />
+    </AspectRatio>
+  );
+}
+
+// Square image container
+function SquareImage() {
+  return (
+    <AspectRatio ratio={1} className="bg-muted">
+      <img
+        src="/image.jpg"
+        alt="Description"
+        className="w-full h-full object-cover rounded-md"
+      />
+    </AspectRatio>
+  );
+}
+```
+
+## Integration Patterns
+
+### Image Containers
+
+```tsx
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import Image from "next/image";
+
+// Next.js Image with aspect ratio
+function ResponsiveImage() {
+  return (
+    <AspectRatio ratio={4 / 3} className="bg-muted rounded-lg overflow-hidden">
+      <Image
+        src="/landscape.jpg"
+        alt="Landscape photo"
+        fill
+        className="object-cover"
+      />
+    </AspectRatio>
+  );
+}
+```
+
+### Video Embeds
+
+```tsx
+// YouTube or Vimeo embed with responsive aspect ratio
+function VideoEmbed({ videoId }) {
+  return (
+    <AspectRatio ratio={16 / 9} className="rounded-lg overflow-hidden">
+      <iframe
+        src={`https://www.youtube.com/embed/${videoId}`}
+        title="Video player"
+        className="w-full h-full border-0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </AspectRatio>
+  );
+}
+```
+
+### Card Media Sections
+
+```tsx
+import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+
+// Product card with consistent image proportions
+function ProductCard({ product }) {
+  return (
+    <Card>
+      <AspectRatio ratio={1} className="bg-muted">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover"
+        />
+      </AspectRatio>
+      <CardContent>
+        <h3 className="font-semibold">{product.name}</h3>
+        <p className="text-muted-foreground">${product.price}</p>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Grid Layouts
+
+```tsx
+// Gallery grid with consistent aspect ratios
+function PhotoGallery({ photos }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {photos.map((photo) => (
+        <AspectRatio
+          key={photo.id}
+          ratio={1}
+          className="bg-muted rounded-lg overflow-hidden"
+        >
+          <img
+            src={photo.url}
+            alt={photo.alt}
+            className="w-full h-full object-cover hover:scale-105 transition-transform"
+          />
+        </AspectRatio>
+      ))}
+    </div>
+  );
+}
+```
+
+### Placeholder Content
+
+```tsx
+// Loading placeholder with maintained proportions
+function MediaPlaceholder({ isLoading, ratio = 16 / 9 }) {
+  return (
+    <AspectRatio ratio={ratio} className="bg-muted rounded-lg">
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <p>No media available</p>
+        </div>
+      )}
+    </AspectRatio>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Choose appropriate ratios**: Use common ratios like 16:9 for video content, 4:3 for traditional photos, 1:1 for avatars or square content
+- **Combine with object-fit**: Use CSS `object-cover` or `object-contain` on child images to control how content fills the container
+- **Consider content type**: Video content typically works best with 16:9, while social media images often use 1:1 or 4:5 ratios
+- **Maintain consistency**: Use the same aspect ratio across similar content types for visual coherence
+
+### Accessibility
+
+- **Provide meaningful alt text**: Ensure images within AspectRatio containers have descriptive alt attributes
+- **Consider reduced motion**: When using hover effects or animations, respect users' motion preferences
+- **Maintain focus indicators**: Ensure interactive content within AspectRatio containers maintains visible focus states
+- **Use semantic markup**: Choose appropriate HTML elements for the content type (img for images, iframe for embeds)
+
+### Performance
+
+- **Optimize images**: Use appropriate image formats and sizes for the intended display dimensions
+- **Lazy loading**: Implement lazy loading for images within AspectRatio containers, especially in grids
+- **Responsive images**: Use responsive image techniques (srcset, Next.js Image) within AspectRatio containers
+- **CSS containment**: Leverage CSS containment for AspectRatio containers to improve rendering performance
+
+## Common Patterns
+
+### Pattern 1: Responsive Media Cards
+
+```tsx
+// Perfect for content feeds, product listings, or media galleries
+function MediaCard({ item }) {
+  return (
+    <div className="space-y-3">
+      <AspectRatio
+        ratio={16 / 9}
+        className="bg-muted rounded-lg overflow-hidden"
+      >
+        <img
+          src={item.thumbnail}
+          alt={item.title}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+        />
+        {item.duration && (
+          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+            {item.duration}
+          </div>
+        )}
+      </AspectRatio>
+      <div>
+        <h3 className="font-medium line-clamp-2">{item.title}</h3>
+        <p className="text-sm text-muted-foreground">{item.author}</p>
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Hero Section with Background
+
+```tsx
+// Ideal for landing pages, banners, or promotional sections
+function HeroSection({ backgroundImage, children }) {
+  return (
+    <AspectRatio
+      ratio={21 / 9}
+      className="relative bg-muted rounded-xl overflow-hidden"
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      />
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="relative z-10 flex items-center justify-center h-full p-8 text-center text-white">
+        {children}
+      </div>
+    </AspectRatio>
+  );
+}
+```
+
+### Pattern 3: Avatar/Profile Image Container
+
+```tsx
+// Perfect for user avatars, profile pictures, or team member photos
+function ProfileImage({ src, alt, size = "md" }) {
+  const sizeClasses = {
+    sm: "w-12 h-12",
+    md: "w-20 h-20",
+    lg: "w-32 h-32",
+  };
+
+  return (
+    <div className={`${sizeClasses[size]} rounded-full overflow-hidden`}>
+      <AspectRatio ratio={1}>
+        <img src={src} alt={alt} className="w-full h-full object-cover" />
+      </AspectRatio>
+    </div>
+  );
+}
+```
+
+### Pattern 4: Responsive Embed Container
+
+```tsx
+// Versatile container for any embedded content (videos, maps, widgets)
+function EmbedContainer({
+  src,
+  title,
+  ratio = 16 / 9,
+  allowFullScreen = true,
+}) {
+  return (
+    <AspectRatio ratio={ratio} className="rounded-lg overflow-hidden shadow-lg">
+      <iframe
+        src={src}
+        title={title}
+        className="w-full h-full border-0"
+        allowFullScreen={allowFullScreen}
+        loading="lazy"
+      />
+    </AspectRatio>
+  );
+}
+```

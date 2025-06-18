@@ -1,0 +1,587 @@
+# Carousel Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate carousel functionality with required context and structure
+
+### When to Use
+
+Carousel components are designed for displaying collections of content items in a horizontally or vertically scrollable interface. Use Carousel when you need to:
+
+- **Display content collections** like image galleries, product listings, or card grids
+- **Create responsive layouts** that adapt to different screen sizes with scrollable content
+- **Implement touch and keyboard navigation** for better user experience across devices
+- **Show multiple items with overflow** when content exceeds available viewport space
+- **Create media-rich interfaces** like music track listings, portfolio showcases, or testimonials
+- **Enable progressive disclosure** of content while maintaining spatial efficiency
+
+The Carousel component group provides a fully accessible, responsive carousel with touch gestures, keyboard navigation, and customizable options built on top of Embla Carousel for optimal performance.
+
+### Architecture
+
+**Critical/Strong Coupling**: Carousel components form a tightly coupled system that requires specific compositional relationships and shared context management.
+
+The architecture follows a compound component pattern built on Embla Carousel where:
+
+- All components share state through a central carousel context provider
+- Components must be composed in a specific hierarchical structure
+- Navigation state (scroll position, available directions) is shared across all components
+- Automatic touch gesture, mouse drag, and keyboard navigation support
+- Responsive behavior with configurable orientation and options
+
+### Component Interdependencies
+
+```
+Carousel (Root Context Provider)
+├── CarouselContent (Scrollable Container)
+│   └── CarouselItem (Individual Slide Items)
+├── CarouselPrevious (Optional Navigation Button)
+└── CarouselNext (Optional Navigation Button)
+```
+
+**Required Relationships:**
+
+- `CarouselContent` must be a direct child of `Carousel` root
+- `CarouselItem` components must be children of `CarouselContent`
+- `CarouselPrevious` and `CarouselNext` must be children of `Carousel` root
+- Navigation buttons access shared context for scroll state and methods
+
+**Shared Context:**
+
+- Embla Carousel API instance and reference
+- Scroll direction methods (scrollPrev, scrollNext)
+- Navigation state (canScrollPrev, canScrollNext)
+- Orientation and configuration options
+- Keyboard event handling (Arrow keys for navigation)
+
+## Components
+
+### Carousel {Primary Component}
+
+**Purpose:** Root context provider that manages carousel state and provides Embla Carousel functionality to all child components
+
+**Interface:**
+
+```typescript
+interface CarouselProps {
+  opts?: CarouselOptions; // Embla Carousel configuration options
+  plugins?: CarouselPlugin; // Embla Carousel plugins
+  orientation?: "horizontal" | "vertical"; // Scroll direction
+  setApi?: (api: CarouselApi) => void; // Callback to access API instance
+  className?: string; // Additional styling
+  children: React.ReactNode; // Required child components
+}
+```
+
+**Provides:** Carousel context with API, scroll methods, navigation state, keyboard handling
+**Dependencies:** None (root component)
+
+**Built-in Features:**
+
+- Embla Carousel integration with full API access
+- Automatic touch/mouse drag support
+- Keyboard navigation (Arrow Left/Right keys)
+- Configurable orientation (horizontal/vertical)
+- Plugin system support
+- Accessibility attributes (role="region", aria-roledescription="carousel")
+
+**Usage Example:**
+
+```tsx
+import { Carousel } from "@/components/ui/carousel";
+
+function Example() {
+  return (
+    <Carousel
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+      orientation="horizontal"
+      className="w-full max-w-xs"
+    >
+      {/* CarouselContent and navigation components */}
+    </Carousel>
+  );
+}
+```
+
+### CarouselContent {Content Container}
+
+**Purpose:** Scrollable container that wraps all carousel items with proper overflow handling
+
+**Interface:**
+
+```typescript
+interface CarouselContentProps extends React.ComponentProps<"div"> {
+  className?: string; // Additional styling
+  children: React.ReactNode; // CarouselItem components
+}
+```
+
+**Context Dependencies:** Requires Carousel context for carousel reference and orientation
+**Parent Requirements:** Must be direct child of Carousel root
+**Provides:** Scrollable container with overflow management
+
+**Built-in Features:**
+
+- Overflow hidden container for smooth scrolling
+- Automatic orientation-based flex layout
+- Proper spacing management for items
+- Integration with Embla Carousel scroll engine
+
+**Usage Example:**
+
+```tsx
+<Carousel>
+  <CarouselContent className="-ml-4">
+    {/* CarouselItem components */}
+  </CarouselContent>
+</Carousel>
+```
+
+### CarouselItem {Item Component}
+
+**Purpose:** Individual slide/item wrapper with responsive sizing and accessibility support
+
+**Interface:**
+
+```typescript
+interface CarouselItemProps extends React.ComponentProps<"div"> {
+  className?: string; // Additional styling for responsive behavior
+  children: React.ReactNode; // Item content
+}
+```
+
+**Context Dependencies:** Requires Carousel context for orientation-based spacing
+**Parent Requirements:** Must be child of CarouselContent
+
+**Built-in Features:**
+
+- Responsive basis sizing (full width by default)
+- Proper spacing based on orientation
+- Accessibility attributes (role="group", aria-roledescription="slide")
+- Flex shrink/grow management for consistent sizing
+
+**Usage Example:**
+
+```tsx
+<CarouselContent>
+  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+    <div className="p-4">
+      <h3>Slide 1</h3>
+      <p>Content here</p>
+    </div>
+  </CarouselItem>
+  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+    <div className="p-4">
+      <h3>Slide 2</h3>
+      <p>More content</p>
+    </div>
+  </CarouselItem>
+</CarouselContent>
+```
+
+### CarouselPrevious {Navigation Component}
+
+**Purpose:** Previous navigation button with automatic state management and accessibility
+
+**Interface:**
+
+```typescript
+interface CarouselPreviousProps extends React.ComponentProps<typeof Button> {
+  variant?: ButtonVariant; // Button style variant (default: "outline")
+  size?: ButtonSize; // Button size (default: "icon")
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** Uses carousel context for scrollPrev method and canScrollPrev state
+**Parent Requirements:** Should be child of Carousel root
+**Inherits:** Button component props and styling
+
+**Built-in Features:**
+
+- Automatic disabled state when no previous items available
+- Positioning based on carousel orientation
+- Screen reader accessible (sr-only text)
+- Arrow icon with proper orientation
+- Integration with Button component variants
+
+**Usage Example:**
+
+```tsx
+<Carousel>
+  <CarouselContent>{/* items */}</CarouselContent>
+  <CarouselPrevious className="-left-12" />
+  <CarouselNext className="-right-12" />
+</Carousel>
+```
+
+### CarouselNext {Navigation Component}
+
+**Purpose:** Next navigation button with automatic state management and accessibility
+
+**Interface:**
+
+```typescript
+interface CarouselNextProps extends React.ComponentProps<typeof Button> {
+  variant?: ButtonVariant; // Button style variant (default: "outline")
+  size?: ButtonSize; // Button size (default: "icon")
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** Uses carousel context for scrollNext method and canScrollNext state
+**Parent Requirements:** Should be child of Carousel root
+**Inherits:** Button component props and styling
+
+**Built-in Features:**
+
+- Automatic disabled state when no next items available
+- Positioning based on carousel orientation
+- Screen reader accessible (sr-only text)
+- Arrow icon with proper orientation
+- Integration with Button component variants
+
+**Usage Example:**
+
+```tsx
+<Carousel>
+  <CarouselContent>{/* items */}</CarouselContent>
+  <CarouselPrevious />
+  <CarouselNext />
+</Carousel>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <Carousel className="w-full max-w-xs">
+      <CarouselContent>
+        <CarouselItem>
+          <div className="p-1">
+            <div className="flex aspect-square items-center justify-center p-6">
+              <span className="text-sm">1</span>
+            </div>
+          </div>
+        </CarouselItem>
+        <CarouselItem>
+          <div className="p-1">
+            <div className="flex aspect-square items-center justify-center p-6">
+              <span className="text-sm">2</span>
+            </div>
+          </div>
+        </CarouselItem>
+        <CarouselItem>
+          <div className="p-1">
+            <div className="flex aspect-square items-center justify-center p-6">
+              <span className="text-sm">3</span>
+            </div>
+          </div>
+        </CarouselItem>
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  );
+}
+```
+
+### Advanced Usage with API Access
+
+```tsx
+function AdvancedExample() {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
+  return (
+    <div className="mx-auto max-w-xs">
+      <Carousel setApi={setApi} className="w-full">
+        <CarouselContent>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <CarouselItem key={index}>
+              <Card>
+                <CardContent className="flex aspect-square items-center justify-center p-6">
+                  <span className="text-2xl font-semibold">{index + 1}</span>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+      <div className="py-2 text-center text-sm text-muted-foreground">
+        Slide {current} of {count}
+      </div>
+    </div>
+  );
+}
+```
+
+### Responsive Grid Layout
+
+```tsx
+function ResponsiveGridExample() {
+  const tracks = [...]; // Your data array
+
+  return (
+    <Carousel
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+      className="w-full"
+    >
+      <CarouselContent className="-ml-4">
+        {tracks.map((track) => (
+          <CarouselItem
+            key={track.id}
+            className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+          >
+            <TrackCard track={track} />
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="hidden sm:flex -left-4" />
+      <CarouselNext className="hidden sm:flex -right-4" />
+    </Carousel>
+  );
+}
+```
+
+### Vertical Orientation
+
+```tsx
+function VerticalExample() {
+  return (
+    <Carousel
+      orientation="vertical"
+      opts={{
+        align: "start",
+      }}
+      className="w-full max-w-xs"
+    >
+      <CarouselContent className="-mt-1 h-[200px]">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <CarouselItem key={index} className="pt-1 md:basis-1/2">
+            <div className="flex items-center justify-center p-6">
+              <span className="text-sm">Slide {index + 1}</span>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+1. **Initialization**: Carousel creates Embla instance with provided options
+2. **Context Provision**: Carousel provides API, scroll methods, and state to children
+3. **Content Rendering**: CarouselContent creates scrollable container with proper overflow
+4. **Item Layout**: CarouselItem components receive orientation-based spacing and sizing
+5. **Navigation State**: Previous/Next buttons receive enabled/disabled state from context
+6. **User Interaction**: Touch/drag gestures and button clicks trigger scroll methods
+7. **State Updates**: Carousel context updates navigation state and triggers re-renders
+
+### Context Sharing
+
+- **Embla API Instance**: Full access to carousel functionality and methods
+- **Scroll Methods**: scrollPrev() and scrollNext() functions for navigation
+- **Navigation State**: canScrollPrev and canScrollNext boolean flags
+- **Configuration**: orientation and options passed to all components
+- **Event Handling**: Keyboard navigation (Arrow keys) managed at root level
+
+### Event Handling
+
+- **Touch Gestures**: Automatically handled by Embla Carousel engine
+- **Mouse Drag**: Desktop drag support for scrolling
+- **Keyboard Navigation**: Arrow Left/Right keys for horizontal scrolling
+- **Button Clicks**: CarouselPrevious/Next trigger respective scroll methods
+- **API Events**: "select", "reInit" events for external state synchronization
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always wrap items in CarouselContent** to ensure proper scrolling behavior
+- **Use responsive classes on CarouselItem** (e.g., md:basis-1/2, lg:basis-1/3) for adaptive layouts
+- **Position navigation buttons appropriately** with negative margins or absolute positioning
+- **Hide navigation on mobile when needed** using responsive classes (hidden sm:flex)
+- **Provide sufficient spacing** between items using padding classes
+
+### Accessibility
+
+- **Keyboard Navigation**: Arrow keys automatically navigate slides horizontally
+- **Screen Reader Support**: Proper ARIA roles and descriptions for carousel and slides
+- **Focus Management**: Navigation buttons receive proper focus indicators
+- **Motion Preferences**: Respects user's reduced motion preferences
+- **Touch Accessibility**: Large enough touch targets for navigation buttons
+
+### Performance
+
+- **Lazy Loading**: Consider implementing lazy loading for image-heavy carousels
+- **Virtualization**: For large datasets, consider virtual scrolling patterns
+- **API Optimization**: Use setApi callback only when needed to access carousel methods
+- **Event Cleanup**: Embla events are automatically cleaned up on unmount
+- **Responsive Images**: Use responsive image techniques within CarouselItem
+
+## Common Patterns
+
+### Pattern 1: Media Gallery Carousel
+
+```tsx
+// Recommended pattern for image/media galleries
+function MediaGalleryCarousel({ images }) {
+  return (
+    <Carousel className="w-full max-w-lg mx-auto">
+      <CarouselContent>
+        {images.map((image, index) => (
+          <CarouselItem key={index}>
+            <div className="p-1">
+              <AspectRatio ratio={16 / 9}>
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="rounded-md object-cover w-full h-full"
+                />
+              </AspectRatio>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="left-2" />
+      <CarouselNext className="right-2" />
+    </Carousel>
+  );
+}
+```
+
+### Pattern 2: Product/Content Card Grid
+
+```tsx
+// Pattern for responsive card grids with overflow scrolling
+function ProductCarousel({ products }) {
+  return (
+    <section className="py-8">
+      <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+      <Carousel
+        opts={{
+          align: "start",
+          loop: false,
+        }}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-4">
+          {products.map((product) => (
+            <CarouselItem
+              key={product.id}
+              className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+            >
+              <Card>
+                <CardContent className="p-4">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-md mb-4"
+                  />
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <p className="text-muted-foreground">${product.price}</p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex -left-12" />
+        <CarouselNext className="hidden md:flex -right-12" />
+      </Carousel>
+    </section>
+  );
+}
+```
+
+### Pattern 3: Testimonials with Indicators
+
+```tsx
+// Pattern for testimonials with custom progress indicators
+function TestimonialsCarousel({ testimonials }) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <Carousel setApi={setApi} opts={{ loop: true }} className="w-full">
+        <CarouselContent>
+          {testimonials.map((testimonial, index) => (
+            <CarouselItem key={index}>
+              <div className="text-center p-8">
+                <blockquote className="text-lg italic mb-4">
+                  "{testimonial.quote}"
+                </blockquote>
+                <cite className="font-semibold">
+                  {testimonial.author}, {testimonial.title}
+                </cite>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+
+      {/* Custom indicators */}
+      <div className="flex justify-center space-x-2 mt-4">
+        {testimonials.map((_, index) => (
+          <button
+            key={index}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === current ? "bg-primary" : "bg-muted"
+            }`}
+            onClick={() => api?.scrollTo(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+```

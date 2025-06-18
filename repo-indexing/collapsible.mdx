@@ -1,0 +1,373 @@
+# Collapsible Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate collapsible functionality that allows users to show and hide content sections with smooth animations and accessible interaction patterns.
+
+### When to Use
+
+- **FAQ sections** - Hide answers until users click on questions
+- **Navigation menus** - Create expandable menu sections in sidebars
+- **Content organization** - Group related content that can be collapsed to save space
+- **Settings panels** - Allow users to expand/collapse configuration sections
+- **Documentation** - Create expandable sections for detailed information
+- **Mobile interfaces** - Optimize space usage by allowing content to be collapsed on smaller screens
+
+### Architecture
+
+**Strong Coupling**: The Collapsible component group requires a compositional hierarchy where the root `Collapsible` component manages state and provides context for its child components `CollapsibleTrigger` and `CollapsibleContent`. These components must work together to provide accessible collapsible functionality.
+
+### Component Interdependencies
+
+The Collapsible group follows a required parent-child relationship pattern:
+
+- **Collapsible (Root)** - Manages the open/closed state and provides context to child components
+- **CollapsibleTrigger** - Must be a child of Collapsible, handles user interaction to toggle state
+- **CollapsibleContent** - Must be a child of Collapsible, contains the content that is shown/hidden
+- **Shared Context** - The root component provides state management that trigger and content components consume
+- **ARIA Relationships** - Components automatically establish proper accessibility relationships
+
+## Components
+
+### Collapsible {Primary Component}
+
+The root component that manages the collapsible state and provides context to its children.
+
+**Purpose:** Manages the open/closed state of the collapsible section and provides context for trigger and content components.
+
+**Interface:**
+
+```typescript
+interface CollapsibleProps
+  extends React.ComponentProps<typeof CollapsiblePrimitive.Root> {
+  children: React.ReactNode; // Required CollapsibleTrigger and CollapsibleContent components
+  defaultOpen?: boolean; // Whether the collapsible is initially open
+  open?: boolean; // Controlled open state
+  onOpenChange?: (open: boolean) => void; // Callback when open state changes
+  disabled?: boolean; // Whether the collapsible is disabled
+  className?: string; // Additional CSS classes
+}
+```
+
+**Dependencies:** Built on `@radix-ui/react-collapsible` primitive
+**Provides:** State management and accessibility context for child components
+
+**Usage Example:**
+
+```tsx
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+
+function Example() {
+  return (
+    <Collapsible defaultOpen={false}>
+      <CollapsibleTrigger>Toggle Content</CollapsibleTrigger>
+      <CollapsibleContent>
+        This content can be collapsed and expanded.
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+```
+
+### CollapsibleTrigger {Dependent Component}
+
+The interactive element that users click to toggle the collapsible content.
+
+**Purpose:** Provides the interactive element that users click or activate to toggle the visibility of the CollapsibleContent.
+
+**Interface:**
+
+```typescript
+interface CollapsibleTriggerProps
+  extends React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger> {
+  children: React.ReactNode; // The trigger content (button text, icon, etc.)
+  className?: string; // Additional CSS classes
+  asChild?: boolean; // Whether to render as a child component
+}
+```
+
+**Context Dependencies:** Requires the Collapsible root component to provide state and accessibility context
+**Parent Requirements:** Must be used within a Collapsible component for proper functionality
+
+**Usage Example:**
+
+```tsx
+// Must be used within Collapsible
+<Collapsible>
+  <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left">
+    <span>Click to expand</span>
+    <ChevronDownIcon className="h-4 w-4" />
+  </CollapsibleTrigger>
+  <CollapsibleContent>Content here</CollapsibleContent>
+</Collapsible>
+```
+
+### CollapsibleContent {Dependent Component}
+
+The container for content that is shown or hidden when the collapsible is toggled.
+
+**Purpose:** Contains the content that is revealed or hidden when the CollapsibleTrigger is activated, with smooth animation transitions.
+
+**Interface:**
+
+```typescript
+interface CollapsibleContentProps
+  extends React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent> {
+  children: React.ReactNode; // The content to be shown/hidden
+  className?: string; // Additional CSS classes
+  forceMount?: boolean; // Force mount the content regardless of state
+}
+```
+
+**Context Dependencies:** Requires the Collapsible root component to provide state and accessibility context
+**Parent Requirements:** Must be used within a Collapsible component for proper functionality
+
+**Usage Example:**
+
+```tsx
+// Must be used within Collapsible
+<Collapsible>
+  <CollapsibleTrigger>Show Details</CollapsibleTrigger>
+  <CollapsibleContent className="px-4 pb-4">
+    <div className="space-y-2">
+      <p>This is the collapsible content that can be shown or hidden.</p>
+      <p>It supports any React children and maintains accessibility.</p>
+    </div>
+  </CollapsibleContent>
+</Collapsible>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger>Click to toggle</CollapsibleTrigger>
+      <CollapsibleContent>This content can be collapsed.</CollapsibleContent>
+    </Collapsible>
+  );
+}
+```
+
+### Controlled Usage
+
+```tsx
+import { useState } from "react";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+
+function ControlledExample() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-4">
+        <span>Controlled Collapsible</span>
+        <span>{isOpen ? "Close" : "Open"}</span>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="p-4">
+        <p>This collapsible is controlled by external state.</p>
+        <button onClick={() => setIsOpen(false)}>Close from inside</button>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+```
+
+### Advanced Usage with Styling
+
+```tsx
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function AdvancedExample() {
+  return (
+    <Collapsible className="border rounded-lg">
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition-colors">
+        <h3 className="font-medium">Advanced Settings</h3>
+        <ChevronDownIcon className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="border-t">
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Option 1</label>
+              <input type="text" className="w-full p-2 border rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Option 2</label>
+              <input type="text" className="w-full p-2 border rounded" />
+            </div>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+1. **State Management**: The Collapsible root component manages the open/closed state
+2. **Trigger Interaction**: CollapsibleTrigger receives user input and communicates with the root to toggle state
+3. **Content Visibility**: CollapsibleContent responds to state changes by showing/hiding content with animations
+4. **Accessibility**: All components coordinate to maintain proper ARIA attributes and keyboard navigation
+
+### Context Sharing
+
+- **State Context**: Open/closed state is shared from root to all child components
+- **Accessibility Context**: ARIA relationships and IDs are coordinated across components
+- **Animation Context**: Transition states are synchronized between trigger and content
+
+### Event Handling
+
+- **Click Events**: CollapsibleTrigger handles click events and bubbles state changes to the root
+- **Keyboard Events**: Space and Enter keys on the trigger toggle the collapsible
+- **State Changes**: onOpenChange callbacks allow external components to respond to state changes
+
+## Best Practices
+
+### Usage Guidelines
+
+- Always use CollapsibleTrigger and CollapsibleContent as direct children of Collapsible for proper accessibility
+- Provide clear visual indicators in the trigger to show the current state (expanded/collapsed)
+- Use semantic HTML elements within the trigger (headings, buttons) for better accessibility
+- Keep content height reasonable to avoid jarring animations on expand/collapse
+
+### Accessibility
+
+- **ARIA Relationships**: Components automatically establish aria-expanded, aria-controls, and id relationships
+- **Keyboard Navigation**: Space and Enter keys work on the trigger to toggle state
+- **Screen Reader Support**: State changes are announced automatically to assistive technologies
+- **Focus Management**: Focus remains on the trigger after toggling for predictable navigation
+
+### Performance
+
+- **Animation Performance**: Content height transitions are optimized using CSS transforms
+- **Conditional Rendering**: Content can be conditionally mounted/unmounted using the forceMount prop
+- **State Management**: Use controlled mode only when necessary to avoid unnecessary re-renders
+
+## Common Patterns
+
+### FAQ Section
+
+```tsx
+const faqs = [
+  {
+    question: "How do I get started?",
+    answer: "Follow our getting started guide...",
+  },
+  {
+    question: "What are the requirements?",
+    answer: "You need Node.js 18 or higher...",
+  },
+];
+
+function FAQSection() {
+  return (
+    <div className="space-y-2">
+      {faqs.map((faq, index) => (
+        <Collapsible key={index} className="border rounded-lg">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-gray-50">
+            <h3 className="font-medium">{faq.question}</h3>
+            <ChevronDownIcon className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="border-t">
+            <div className="p-4">
+              <p className="text-gray-600">{faq.answer}</p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      ))}
+    </div>
+  );
+}
+```
+
+### Navigation Menu Section
+
+```tsx
+function NavigationSection({ title, items, defaultOpen = false }) {
+  return (
+    <Collapsible defaultOpen={defaultOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-sm font-medium hover:bg-gray-100 rounded">
+        <span>{title}</span>
+        <ChevronDownIcon className="h-3 w-3 transition-transform data-[state=open]:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="pl-4 py-2 space-y-1">
+          {items.map((item, index) => (
+            <a
+              key={index}
+              href={item.href}
+              className="block p-1 text-sm text-gray-600 hover:text-gray-900"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+```
+
+### Settings Panel
+
+```tsx
+function SettingsPanel() {
+  return (
+    <div className="space-y-4">
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-lg">
+          <div>
+            <h3 className="font-medium">Privacy Settings</h3>
+            <p className="text-sm text-gray-600">
+              Manage your privacy preferences
+            </p>
+          </div>
+          <ChevronDownIcon className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
+          <div className="space-y-4">
+            <label className="flex items-center space-x-2">
+              <input type="checkbox" />
+              <span>Allow data collection</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input type="checkbox" />
+              <span>Show online status</span>
+            </label>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+```

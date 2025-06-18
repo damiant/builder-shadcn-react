@@ -1,0 +1,379 @@
+# Calendar Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate calendar functionality for date selection, scheduling, and temporal navigation interfaces.
+
+### When to Use
+
+- **Date Selection**: When users need to pick specific dates for forms, bookings, or scheduling
+- **Date Range Selection**: For selecting start and end dates for periods, trips, or event durations
+- **Scheduling Interfaces**: In booking systems, appointment schedulers, or event management applications
+- **Temporal Navigation**: When providing calendar-based navigation through time-based content
+- **Date Input Enhancement**: As an alternative or complement to date input fields for better user experience
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently without requiring other components. The Calendar component is a thoughtfully styled wrapper around the popular `react-day-picker` library, providing consistent design system integration while maintaining all the functionality of the underlying library.
+
+### Component Interdependencies
+
+None - the Calendar component is self-contained and does not require other components to function. It internally uses Button variants for navigation styling but does not expose this dependency to consumers.
+
+## Components
+
+### Calendar
+
+**Purpose:** Provides a fully-featured calendar interface for date selection with extensive customization options and accessibility features built-in.
+
+**Interface:**
+
+```typescript
+interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
+  className?: string;
+  classNames?: Partial<{
+    months: string;
+    month: string;
+    caption: string;
+    caption_label: string;
+    nav: string;
+    nav_button: string;
+    nav_button_previous: string;
+    nav_button_next: string;
+    table: string;
+    head_row: string;
+    head_cell: string;
+    row: string;
+    cell: string;
+    day: string;
+    day_range_start: string;
+    day_range_end: string;
+    day_selected: string;
+    day_today: string;
+    day_outside: string;
+    day_disabled: string;
+    day_range_middle: string;
+    day_hidden: string;
+    [key: string]: string;
+  }>;
+  showOutsideDays?: boolean;
+  // Inherits all DayPicker props including:
+  mode?: "single" | "multiple" | "range";
+  selected?: Date | Date[] | { from: Date; to: Date };
+  onSelect?: (
+    date: Date | Date[] | { from: Date; to: Date } | undefined,
+  ) => void;
+  disabled?: Date | Date[] | ((date: Date) => boolean);
+  fromDate?: Date;
+  toDate?: Date;
+  defaultMonth?: Date;
+  footer?: React.ReactNode;
+  // ... and many more DayPicker props
+}
+```
+
+**Key Features:**
+
+- **Flexible Selection Modes**: Single date, multiple dates, or date range selection
+- **Comprehensive Styling**: Fully customizable appearance through className and classNames props
+- **Accessibility Built-in**: ARIA labels, keyboard navigation, and screen reader support
+- **Date Constraints**: Min/max date restrictions and custom disabled date logic
+- **Localization Support**: Multi-language and locale-aware formatting
+- **Responsive Design**: Mobile-friendly interface that adapts to different screen sizes
+
+**Usage Example:**
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+
+function DatePickerExample() {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+
+  return (
+    <Calendar
+      mode="single"
+      selected={selectedDate}
+      onSelect={setSelectedDate}
+      className="rounded-md border"
+      showOutsideDays={true}
+    />
+  );
+}
+```
+
+## Integration Patterns
+
+### Single Date Selection
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+
+function SingleDatePicker() {
+  const [date, setDate] = useState<Date | undefined>();
+
+  return (
+    <div className="space-y-4">
+      <Calendar
+        mode="single"
+        selected={date}
+        onSelect={setDate}
+        className="rounded-md border"
+      />
+      {date && (
+        <p className="text-sm text-muted-foreground">
+          Selected: {date.toLocaleDateString()}
+        </p>
+      )}
+    </div>
+  );
+}
+```
+
+### Date Range Selection
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+import { DateRange } from "react-day-picker";
+
+function DateRangePicker() {
+  const [range, setRange] = useState<DateRange | undefined>();
+
+  return (
+    <div className="space-y-4">
+      <Calendar
+        mode="range"
+        selected={range}
+        onSelect={setRange}
+        numberOfMonths={2}
+        className="rounded-md border"
+      />
+      {range?.from && (
+        <div className="text-sm text-muted-foreground">
+          <p>From: {range.from.toLocaleDateString()}</p>
+          {range.to && <p>To: {range.to.toLocaleDateString()}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Calendar with Constraints
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+
+function ConstrainedCalendar() {
+  const [date, setDate] = useState<Date | undefined>();
+  const today = new Date();
+  const oneYearFromNow = new Date(
+    today.getFullYear() + 1,
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      disabled={(date) => date < today || date > oneYearFromNow}
+      fromDate={today}
+      toDate={oneYearFromNow}
+      className="rounded-md border"
+      footer={
+        <p className="text-xs text-muted-foreground mt-2">
+          Select a date within the next year
+        </p>
+      }
+    />
+  );
+}
+```
+
+### Custom Styling Example
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+
+function CustomStyledCalendar() {
+  const [date, setDate] = useState<Date | undefined>();
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      className="rounded-lg border-2 border-primary/20 shadow-lg"
+      classNames={{
+        day_selected:
+          "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground",
+        day_today: "bg-accent/50 text-accent-foreground font-semibold",
+        caption_label: "text-lg font-semibold",
+        nav_button: "hover:bg-primary/10 border-primary/20",
+      }}
+    />
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always provide controlled state** - Use `selected` and `onSelect` props for proper React state management
+- **Consider date constraints** - Use `disabled`, `fromDate`, and `toDate` to prevent invalid selections
+- **Provide user feedback** - Display selected dates or validation messages to confirm user actions
+- **Handle edge cases** - Account for timezone differences and daylight saving time in your date logic
+- **Optimize for your use case** - Choose the appropriate `mode` (single/multiple/range) based on your application needs
+
+### Accessibility
+
+- **Keyboard Navigation**: Full keyboard support with arrow keys, Enter, Space, Page Up/Down, Home/End
+- **Screen Reader Support**: Comprehensive ARIA labels and announcements for date changes
+- **Focus Management**: Proper focus indicators and logical tab order throughout the calendar
+- **Date Announcement**: Selected dates and navigation changes are announced to assistive technologies
+- **High Contrast Support**: Respects user's system preferences for high contrast mode
+
+### Performance
+
+- **Lazy Loading**: Only renders visible month(s) to optimize performance for large date ranges
+- **Memoization**: Consider wrapping in `React.memo` for components that receive frequent prop updates
+- **Event Handler Optimization**: Use `useCallback` for `onSelect` handlers to prevent unnecessary re-renders
+- **Date Object Reuse**: Cache and reuse Date objects when possible to reduce memory allocation
+
+## Common Patterns
+
+### Form Integration with Validation
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
+function BookingForm() {
+  const [checkIn, setCheckIn] = useState<Date | undefined>();
+  const [checkOut, setCheckOut] = useState<Date | undefined>();
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const validateDates = () => {
+    const newErrors: string[] = [];
+
+    if (!checkIn) newErrors.push("Check-in date is required");
+    if (!checkOut) newErrors.push("Check-out date is required");
+    if (checkIn && checkOut && checkIn >= checkOut) {
+      newErrors.push("Check-out must be after check-in");
+    }
+
+    setErrors(newErrors);
+    return newErrors.length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (validateDates()) {
+      // Process booking
+      console.log("Booking:", { checkIn, checkOut });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Check-in Date
+          </label>
+          <Calendar
+            mode="single"
+            selected={checkIn}
+            onSelect={setCheckIn}
+            disabled={(date) => date < new Date()}
+            className="rounded-md border"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Check-out Date
+          </label>
+          <Calendar
+            mode="single"
+            selected={checkOut}
+            onSelect={setCheckOut}
+            disabled={(date) => date <= (checkIn || new Date())}
+            className="rounded-md border"
+          />
+        </div>
+      </div>
+
+      {errors.length > 0 && (
+        <div className="text-sm text-destructive space-y-1">
+          {errors.map((error, index) => (
+            <p key={index}>{error}</p>
+          ))}
+        </div>
+      )}
+
+      <Button onClick={handleSubmit} className="w-full">
+        Book Now
+      </Button>
+    </div>
+  );
+}
+```
+
+### Multi-Month Calendar for Large Selections
+
+```tsx
+import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
+
+function ProjectScheduler() {
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+
+  return (
+    <div className="space-y-4">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold">Project Timeline</h3>
+        <p className="text-sm text-muted-foreground">
+          Select multiple dates for project milestones
+        </p>
+      </div>
+
+      <Calendar
+        mode="multiple"
+        selected={selectedDates}
+        onSelect={setSelectedDates}
+        numberOfMonths={3}
+        className="rounded-md border"
+        disabled={(date) => date < new Date()}
+        footer={
+          selectedDates.length > 0 && (
+            <div className="mt-4 p-3 bg-muted rounded-md">
+              <p className="text-sm font-medium">
+                Selected Dates ({selectedDates.length}):
+              </p>
+              <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                {selectedDates
+                  .sort((a, b) => a.getTime() - b.getTime())
+                  .map((date, index) => (
+                    <p key={index}>{date.toLocaleDateString()}</p>
+                  ))}
+              </div>
+            </div>
+          )
+        }
+      />
+    </div>
+  );
+}
+```

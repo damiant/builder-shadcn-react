@@ -1,0 +1,310 @@
+# Label Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate label functionality for form inputs and other interactive elements, providing accessible text descriptions and visual associations.
+
+### When to Use
+
+- **Form labels**: Associate descriptive text with form inputs (text fields, checkboxes, radio buttons, etc.)
+- **Accessibility enhancement**: Provide programmatic labels for screen readers and assistive technologies
+- **Interactive element identification**: Label buttons, toggles, and other interactive components
+- **Required form field indication**: Mark mandatory fields with visual cues
+- **Input group labeling**: Provide context for grouped form controls
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently. However, it's designed to work seamlessly with form components and has enhanced integration with the Form component group through the FormLabel wrapper.
+
+### Component Interdependencies
+
+While Label is standalone, it has optional integration patterns:
+
+- **Optional Form Integration**: When used within Form context, FormLabel provides enhanced functionality
+- **Input Association**: Uses `htmlFor` prop to associate with form controls via their `id` attributes
+- **Accessibility Enhancement**: Works with any interactive element that needs labeling
+
+## Components
+
+### Label
+
+**Purpose:** Provides accessible, styled labels for form inputs and interactive elements, built on Radix UI's label primitive with custom styling and behavior.
+
+**Interface:**
+
+```typescript
+interface LabelProps extends React.ComponentProps<typeof LabelPrimitive.Root> {
+  className?: string; // Additional CSS classes for styling customization
+  htmlFor?: string; // Associates label with form control by ID
+  children: React.ReactNode; // Label text or content
+  // Inherits all props from Radix UI Label primitive
+}
+```
+
+**Key Features:**
+
+- Built on `@radix-ui/react-label` for robust accessibility
+- Automatic disabled state styling when associated input is disabled
+- Pointer events disabled in disabled state
+- Select-none behavior for better UX
+- Flexible content support (text, icons, complex elements)
+
+**Usage Example:**
+
+```tsx
+import { Label } from "@/components/ui/label";
+
+function BasicExample() {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="email">Email Address</Label>
+      <input
+        id="email"
+        type="email"
+        className="input"
+        placeholder="Enter your email"
+      />
+    </div>
+  );
+}
+```
+
+**With Required Field Indicator:**
+
+```tsx
+function RequiredFieldExample() {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="username">
+        Username
+        <span className="text-destructive ml-1">*</span>
+      </Label>
+      <input id="username" type="text" required className="input" />
+    </div>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Label } from "@/components/ui/label";
+
+// Simple text input labeling
+function TextInputExample() {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="name">Full Name</Label>
+      <input id="name" type="text" className="input" />
+    </div>
+  );
+}
+
+// Checkbox labeling
+function CheckboxExample() {
+  return (
+    <div className="flex items-center space-x-2">
+      <input id="terms" type="checkbox" />
+      <Label htmlFor="terms">I agree to the terms and conditions</Label>
+    </div>
+  );
+}
+```
+
+### Form Integration
+
+```tsx
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+
+// Enhanced form integration with validation
+function FormExample() {
+  const form = useForm();
+
+  return (
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email Address</FormLabel>
+            <FormControl>
+              <input {...field} type="email" />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    </Form>
+  );
+}
+
+// Standalone usage alongside form components
+function HybridExample() {
+  return (
+    <div className="space-y-4">
+      {/* Regular label */}
+      <div className="grid gap-2">
+        <Label htmlFor="search">Search</Label>
+        <input id="search" type="search" />
+      </div>
+
+      {/* Form-integrated label */}
+      <Form>
+        <FormField
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <textarea {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </Form>
+    </div>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+// Complex label with icons and styling
+function ComplexLabelExample() {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="password" className="text-base font-semibold">
+        <svg className="w-4 h-4 inline mr-2" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+        </svg>
+        Password
+        <span className="text-destructive">*</span>
+      </Label>
+      <input id="password" type="password" className="input" required />
+    </div>
+  );
+}
+
+// Label with description
+function DescriptiveLabelExample() {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="api-key" className="space-y-1">
+        <span>API Key</span>
+        <span className="text-sm text-muted-foreground font-normal block">
+          Your secret API key for authentication
+        </span>
+      </Label>
+      <input
+        id="api-key"
+        type="password"
+        className="input"
+        placeholder="sk-..."
+      />
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always use htmlFor**: Associate labels with form controls using the `htmlFor` prop matching the input's `id`
+- **Provide clear, concise text**: Label text should be descriptive but brief, clearly indicating the input's purpose
+- **Include required field indicators**: Use visual cues (asterisks, icons) to mark mandatory fields
+- **Maintain consistent styling**: Use the component's built-in styles and extend with `className` when needed
+- **Support complex content**: Labels can contain icons, formatting, and multiple text elements when necessary
+
+### Accessibility
+
+- **Programmatic association**: The `htmlFor` attribute creates proper label-input associations for screen readers
+- **Keyboard navigation**: Labels support click-to-focus behavior, improving keyboard accessibility
+- **Disabled state handling**: Automatic styling and interaction management for disabled form controls
+- **ARIA compatibility**: Works seamlessly with ARIA attributes and assistive technologies
+- **Focus management**: Clicking the label focuses the associated input, improving usability
+
+### Performance
+
+- **Lightweight implementation**: Built on efficient Radix UI primitives with minimal overhead
+- **CSS-only styling**: Uses Tailwind classes for styling without JavaScript overhead
+- **Selective re-rendering**: Only re-renders when props change, not on every form update
+- **Bundle optimization**: Tree-shakeable component that only includes necessary functionality
+
+## Common Patterns
+
+### Pattern 1: Required Field Indication
+
+```tsx
+// Consistent required field marking
+function RequiredLabel({ children, htmlFor, ...props }) {
+  return (
+    <Label htmlFor={htmlFor} {...props}>
+      {children}
+      <span className="text-destructive ml-1" aria-label="required">
+        *
+      </span>
+    </Label>
+  );
+}
+
+// Usage
+<RequiredLabel htmlFor="email">Email Address</RequiredLabel>;
+```
+
+### Pattern 2: Label with Help Text
+
+```tsx
+// Label with additional context
+function LabelWithHelp({ label, help, htmlFor, ...props }) {
+  return (
+    <Label htmlFor={htmlFor} className="space-y-1" {...props}>
+      <span>{label}</span>
+      {help && (
+        <span className="text-sm text-muted-foreground font-normal block">
+          {help}
+        </span>
+      )}
+    </Label>
+  );
+}
+
+// Usage
+<LabelWithHelp
+  htmlFor="username"
+  label="Username"
+  help="Must be 3-20 characters, letters and numbers only"
+/>;
+```
+
+### Pattern 3: Icon Labels
+
+```tsx
+// Label with leading icon
+function IconLabel({ icon, children, htmlFor, ...props }) {
+  return (
+    <Label htmlFor={htmlFor} {...props}>
+      {icon && <span className="mr-2">{icon}</span>}
+      {children}
+    </Label>
+  );
+}
+
+// Usage
+<IconLabel htmlFor="search" icon={<SearchIcon className="w-4 h-4" />}>
+  Search Query
+</IconLabel>;
+```

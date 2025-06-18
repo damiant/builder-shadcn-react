@@ -1,0 +1,589 @@
+# Drawer Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate drawer functionality
+
+### When to Use
+
+Drawers are ideal for presenting supplementary content, forms, or navigation that slides in from the edge of the screen without completely covering the main content. Use drawers when you need to:
+
+- Display additional information or actions contextually
+- Provide navigation menus on mobile devices
+- Show forms or settings panels that don't require full-page focus
+- Present content that users can quickly access and dismiss
+- Create responsive navigation patterns that work across different screen sizes
+- Offer quick actions or filters that complement the main interface
+
+### Architecture
+
+**Critical/Strong Coupling**: The Drawer component group requires a specific compositional hierarchy where components must be used together in the correct structure. The components share context and state through the underlying vaul primitive library, and several components have mandatory parent-child relationships.
+
+### Component Interdependencies
+
+The Drawer component group follows a strict hierarchical pattern:
+
+- **Drawer** (Root): Provides the foundational context and state management
+- **DrawerTrigger**: Must be a child of Drawer, triggers the drawer open state
+- **DrawerContent**: Contains the actual drawer content and automatically includes DrawerPortal and DrawerOverlay
+- **DrawerHeader/DrawerFooter**: Optional structural components that should be children of DrawerContent
+- **DrawerTitle/DrawerDescription**: Semantic components for accessibility, typically used within DrawerHeader
+- **DrawerClose**: Can be placed anywhere within the drawer content to provide close functionality
+
+The components communicate through shared context provided by the vaul library, enabling coordinated state management for open/close states, animations, and accessibility features.
+
+## Components
+
+### Drawer {Primary Component}
+
+The root component that provides the foundational context and state management for the entire drawer system.
+
+**Purpose:** Establishes the drawer context and manages the overall state of the drawer system.
+
+**Interface:**
+
+```typescript
+interface DrawerProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Root> {
+  // Inherits all props from vaul's Drawer.Root including:
+  children: React.ReactNode; // Required child components (DrawerTrigger, DrawerContent)
+  open?: boolean; // Controlled open state
+  defaultOpen?: boolean; // Default open state for uncontrolled usage
+  onOpenChange?: (open: boolean) => void; // Callback when open state changes
+  shouldScaleBackground?: boolean; // Whether to scale the background when drawer is open
+  setBackgroundColorOnScale?: boolean; // Whether to darken background when scaled
+  closeThreshold?: number; // Distance threshold for closing on drag
+  scrollLockTimeout?: number; // Timeout for scroll lock
+  snapPoints?: (string | number)[]; // Snap points for drawer positioning
+  fadeFromIndex?: number; // Index from which to start fading
+  modal?: boolean; // Whether drawer should be modal
+  direction?: "top" | "bottom" | "left" | "right"; // Direction from which drawer appears
+  preventScrollRestoration?: boolean; // Prevent scroll restoration on close
+}
+```
+
+**Dependencies:** None - this is the root component
+**Provides:** Context and state management for all child drawer components through vaul primitives
+
+**Usage Example:**
+
+```tsx
+import { Drawer } from "@/components/ui/drawer";
+
+function Example() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Drawer open={open} onOpenChange={setOpen} direction="bottom">
+      {/* DrawerTrigger and DrawerContent must be children */}
+    </Drawer>
+  );
+}
+```
+
+### DrawerTrigger {Dependent Component}
+
+The interactive element that opens the drawer when activated.
+
+**Purpose:** Provides the user interface element that triggers the drawer to open.
+
+**Interface:**
+
+```typescript
+interface DrawerTriggerProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Trigger> {
+  children: React.ReactNode; // The trigger content (usually a button or link)
+  asChild?: boolean; // Render as child element instead of button
+  // Inherits all standard button props and event handlers
+}
+```
+
+**Context Dependencies:** Requires Drawer context to function properly
+**Parent Requirements:** Must be a direct child of the Drawer component
+
+**Usage Example:**
+
+```tsx
+// Must be used within Drawer
+<Drawer>
+  <DrawerTrigger asChild>
+    <Button variant="outline">Open Drawer</Button>
+  </DrawerTrigger>
+  {/* DrawerContent */}
+</Drawer>
+```
+
+### DrawerContent {Dependent Component}
+
+The main container for the drawer content that automatically includes overlay and portal functionality.
+
+**Purpose:** Provides the content container for the drawer with built-in overlay, portal, and responsive positioning.
+
+**Interface:**
+
+```typescript
+interface DrawerContentProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Content> {
+  children: React.ReactNode; // The drawer content
+  className?: string; // Additional CSS classes
+  // Inherits positioning and animation props from vaul Content
+}
+```
+
+**Context Dependencies:** Requires Drawer context and automatically includes DrawerPortal and DrawerOverlay
+**Parent Requirements:** Must be a child of the Drawer component
+
+**Usage Example:**
+
+```tsx
+<Drawer>
+  <DrawerTrigger>Open</DrawerTrigger>
+  <DrawerContent>
+    <DrawerHeader>
+      <DrawerTitle>Title</DrawerTitle>
+    </DrawerHeader>
+    <div className="p-4">Content goes here</div>
+    <DrawerFooter>
+      <DrawerClose>Close</DrawerClose>
+    </DrawerFooter>
+  </DrawerContent>
+</Drawer>
+```
+
+### DrawerHeader {Layout Component}
+
+Provides consistent header styling and structure for drawer content.
+
+**Purpose:** Creates a standardized header area with proper spacing and layout for titles and descriptions.
+
+**Interface:**
+
+```typescript
+interface DrawerHeaderProps extends React.ComponentProps<"div"> {
+  children: React.ReactNode; // Header content (typically DrawerTitle, DrawerDescription)
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** None - this is a styled div component
+**Parent Requirements:** Should be used within DrawerContent for proper layout
+
+**Usage Example:**
+
+```tsx
+<DrawerContent>
+  <DrawerHeader>
+    <DrawerTitle>Settings</DrawerTitle>
+    <DrawerDescription>Configure your preferences</DrawerDescription>
+  </DrawerHeader>
+</DrawerContent>
+```
+
+### DrawerFooter {Layout Component}
+
+Provides consistent footer styling and structure for drawer actions.
+
+**Purpose:** Creates a standardized footer area with proper spacing for action buttons and controls.
+
+**Interface:**
+
+```typescript
+interface DrawerFooterProps extends React.ComponentProps<"div"> {
+  children: React.ReactNode; // Footer content (typically buttons, actions)
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** None - this is a styled div component
+**Parent Requirements:** Should be used within DrawerContent for proper layout
+
+**Usage Example:**
+
+```tsx
+<DrawerContent>
+  {/* Content */}
+  <DrawerFooter>
+    <Button>Save Changes</Button>
+    <DrawerClose asChild>
+      <Button variant="outline">Cancel</Button>
+    </DrawerClose>
+  </DrawerFooter>
+</DrawerContent>
+```
+
+### DrawerTitle {Semantic Component}
+
+Provides accessible title labeling for the drawer.
+
+**Purpose:** Creates an accessible title for the drawer content that screen readers can identify.
+
+**Interface:**
+
+```typescript
+interface DrawerTitleProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Title> {
+  children: React.ReactNode; // The title text
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Requires Drawer context for proper accessibility labeling
+**Parent Requirements:** Should be used within DrawerHeader or DrawerContent
+
+**Usage Example:**
+
+```tsx
+<DrawerHeader>
+  <DrawerTitle>User Profile</DrawerTitle>
+  <DrawerDescription>Edit your profile information</DrawerDescription>
+</DrawerHeader>
+```
+
+### DrawerDescription {Semantic Component}
+
+Provides accessible description text for the drawer content.
+
+**Purpose:** Creates an accessible description that provides additional context about the drawer's purpose.
+
+**Interface:**
+
+```typescript
+interface DrawerDescriptionProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Description> {
+  children: React.ReactNode; // The description text
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Requires Drawer context for proper accessibility labeling
+**Parent Requirements:** Should be used within DrawerHeader or DrawerContent
+
+**Usage Example:**
+
+```tsx
+<DrawerHeader>
+  <DrawerTitle>Delete Item</DrawerTitle>
+  <DrawerDescription>
+    This action cannot be undone. This will permanently delete the item.
+  </DrawerDescription>
+</DrawerHeader>
+```
+
+### DrawerClose {Action Component}
+
+Provides a way to programmatically close the drawer from within the content.
+
+**Purpose:** Creates elements that can close the drawer when activated, providing user control over dismissal.
+
+**Interface:**
+
+```typescript
+interface DrawerCloseProps
+  extends React.ComponentProps<typeof DrawerPrimitive.Close> {
+  children: React.ReactNode; // The close element content
+  asChild?: boolean; // Render as child element instead of button
+}
+```
+
+**Context Dependencies:** Requires Drawer context to trigger close action
+**Parent Requirements:** Can be used anywhere within the drawer content
+
+**Usage Example:**
+
+```tsx
+<DrawerFooter>
+  <DrawerClose asChild>
+    <Button variant="outline">Cancel</Button>
+  </DrawerClose>
+</DrawerFooter>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerFooter,
+  DrawerClose,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button variant="outline">Open Drawer</Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Example Drawer</DrawerTitle>
+          <DrawerDescription>This is a basic drawer example.</DrawerDescription>
+        </DrawerHeader>
+        <div className="p-4">
+          <p>Your content goes here...</p>
+        </div>
+        <DrawerFooter>
+          <DrawerClose asChild>
+            <Button variant="outline">Close</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+// Complex usage with controlled state and custom positioning
+function AdvancedExample() {
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState("");
+
+  return (
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      direction="right"
+      shouldScaleBackground={true}
+    >
+      <DrawerTrigger asChild>
+        <Button>Settings</Button>
+      </DrawerTrigger>
+      <DrawerContent className="w-full max-w-md">
+        <DrawerHeader>
+          <DrawerTitle>Application Settings</DrawerTitle>
+          <DrawerDescription>
+            Configure your application preferences
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="p-4 space-y-4">
+          <div>
+            <label htmlFor="setting1">Setting 1</label>
+            <input
+              id="setting1"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+        </div>
+        <DrawerFooter className="flex flex-row gap-2">
+          <Button
+            onClick={() => {
+              console.log("Save:", data);
+              setOpen(false);
+            }}
+          >
+            Save Changes
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// Mobile navigation drawer
+function NavigationDrawer() {
+  return (
+    <Drawer direction="left">
+      <DrawerTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Menu className="h-6 w-6" />
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Navigation</DrawerTitle>
+        </DrawerHeader>
+        <nav className="p-4">
+          <a href="/" className="block py-2">
+            Home
+          </a>
+          <a href="/about" className="block py-2">
+            About
+          </a>
+          <a href="/contact" className="block py-2">
+            Contact
+          </a>
+        </nav>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+// Form drawer with validation
+function FormDrawer() {
+  const [errors, setErrors] = useState({});
+
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button>Add Item</Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <form onSubmit={handleSubmit}>
+          <DrawerHeader>
+            <DrawerTitle>Add New Item</DrawerTitle>
+            <DrawerDescription>
+              Fill out the form below to add a new item
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-4 space-y-4">{/* Form fields */}</div>
+          <DrawerFooter>
+            <Button type="submit">Add Item</Button>
+            <DrawerClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </form>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The drawer components follow a unidirectional data flow pattern:
+
+1. **Drawer** (root) maintains the open/closed state and provides context
+2. **DrawerTrigger** sends open signals to the context
+3. **DrawerContent** receives state updates and renders conditionally
+4. **DrawerClose** sends close signals back to the context
+5. State changes propagate through context to update all dependent components
+
+### Context Sharing
+
+All drawer components share state through the vaul library's context system:
+
+- Open/closed state management
+- Animation coordination
+- Accessibility attributes (aria-labelledby, aria-describedby)
+- Focus management and restoration
+- Scroll locking and background scaling
+
+### Event Handling
+
+Events flow through the component hierarchy:
+
+- **Click events** on DrawerTrigger bubble up to open the drawer
+- **Close events** from DrawerClose, overlay clicks, or escape key bubble up to close
+- **Drag events** on mobile allow users to dismiss by swiping
+- **Focus events** are managed automatically for accessibility
+
+## Best Practices
+
+### Usage Guidelines
+
+- Always wrap drawer content in DrawerContent for proper styling and behavior
+- Use DrawerTitle for accessibility - it provides proper labeling for screen readers
+- Include DrawerDescription when the drawer's purpose isn't immediately clear from the title
+- Place primary actions in DrawerFooter for consistent positioning
+- Use asChild prop with DrawerTrigger and DrawerClose to maintain semantic HTML structure
+
+### Accessibility
+
+- DrawerTitle automatically provides aria-labelledby for the drawer content
+- DrawerDescription provides aria-describedby for additional context
+- Focus is automatically trapped within the drawer when open
+- Escape key support is built-in for dismissing the drawer
+- Background content is properly hidden from screen readers when drawer is modal
+
+### Performance
+
+- DrawerContent uses React portals to render outside the normal DOM hierarchy
+- Animations are optimized using CSS transforms for smooth performance
+- Background scaling and overlay effects are handled efficiently by the vaul library
+- Consider using lazy loading for drawer content that contains heavy components
+
+## Common Patterns
+
+### Pattern 1: Mobile-First Navigation
+
+```tsx
+// Responsive navigation that shows drawer on mobile, regular nav on desktop
+function ResponsiveNavigation() {
+  return (
+    <>
+      {/* Mobile drawer navigation */}
+      <div className="md:hidden">
+        <Drawer direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Navigation</DrawerTitle>
+            </DrawerHeader>
+            <NavigationContent />
+          </DrawerContent>
+        </Drawer>
+      </div>
+
+      {/* Desktop navigation */}
+      <nav className="hidden md:block">
+        <NavigationContent />
+      </nav>
+    </>
+  );
+}
+```
+
+### Pattern 2: Confirmation Dialog Alternative
+
+```tsx
+// Use drawer instead of modal dialog for better mobile experience
+function DeleteConfirmation({ item, onConfirm, children }) {
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>{children}</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Delete {item.name}?</DrawerTitle>
+          <DrawerDescription>
+            This action cannot be undone. This will permanently delete the item.
+          </DrawerDescription>
+        </DrawerHeader>
+        <DrawerFooter>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              onConfirm(item.id);
+            }}
+          >
+            Delete
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+```

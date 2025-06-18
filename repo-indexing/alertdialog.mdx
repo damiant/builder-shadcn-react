@@ -1,0 +1,614 @@
+# AlertDialog Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate alert dialog functionality with required compositional structure
+
+### When to Use
+
+AlertDialog components are designed for critical user confirmations and destructive actions that require explicit user consent. Use AlertDialog when you need to:
+
+- **Confirm destructive actions** like deleting files, accounts, or permanent data
+- **Present critical warnings** that require user acknowledgment before proceeding
+- **Block user workflow** until they make an important decision
+- **Display error states** that require user intervention
+- **Request confirmation** for irreversible operations
+
+Unlike regular Dialog components, AlertDialog is specifically designed for accessibility with screen readers and includes automatic focus management for critical decision points.
+
+### Architecture
+
+**Critical/Strong Coupling**: AlertDialog components form a tightly coupled system that requires specific compositional relationships and shared context management.
+
+The architecture follows Radix UI's compound component pattern where:
+
+- All components share state through a central dialog context provider
+- Components must be composed in a specific hierarchical structure
+- Portal-based rendering ensures proper z-index stacking and focus management
+- Automatic overlay and content positioning with animation support
+
+### Component Interdependencies
+
+```
+AlertDialog (Root Context Provider)
+├── AlertDialogTrigger (Opens the dialog)
+└── AlertDialogContent (Portal-rendered container)
+    ├── AlertDialogHeader (Optional header section)
+    │   ├── AlertDialogTitle (Required for accessibility)
+    │   └── AlertDialogDescription (Optional description)
+    ├── [Custom Content Area] (Your dialog body content)
+    └── AlertDialogFooter (Action buttons container)
+        ├── AlertDialogCancel (Cancel action button)
+        └── AlertDialogAction (Confirm action button)
+```
+
+**Required Relationships:**
+
+- `AlertDialogContent` automatically renders `AlertDialogPortal` and `AlertDialogOverlay`
+- `AlertDialogTitle` is required for screen reader accessibility
+- `AlertDialogTrigger` must be a child of `AlertDialog` root
+- All dialog content must be within `AlertDialogContent`
+
+**Shared Context:**
+
+- Open/close state management
+- Focus management and restoration
+- Keyboard navigation (Escape to close)
+- Click outside to close behavior
+
+## Components
+
+### AlertDialog {Primary Component}
+
+**Purpose:** Root context provider that manages dialog state and provides context to all child components
+
+**Interface:**
+
+```typescript
+interface AlertDialogProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Root> {
+  children: React.ReactNode; // Required child components
+  open?: boolean; // Controlled open state
+  onOpenChange?: (open: boolean) => void; // State change callback
+  defaultOpen?: boolean; // Uncontrolled default state
+}
+```
+
+**Provides:** Dialog state context, keyboard event handling, focus management
+**Dependencies:** None (root component)
+
+**Usage Example:**
+
+```tsx
+import { AlertDialog } from "@/components/ui/alert-dialog";
+
+function Example() {
+  return <AlertDialog>{/* Trigger and content components */}</AlertDialog>;
+}
+```
+
+### AlertDialogTrigger {Trigger Component}
+
+**Purpose:** Interactive element that opens the dialog when activated
+
+**Interface:**
+
+```typescript
+interface AlertDialogTriggerProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Trigger> {
+  children: React.ReactNode; // Trigger content (usually button text/icon)
+  asChild?: boolean; // Compose with custom component
+}
+```
+
+**Context Dependencies:** Requires AlertDialog context for state management
+**Parent Requirements:** Must be child of AlertDialog root
+
+**Usage Example:**
+
+```tsx
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button variant="destructive">Delete Account</Button>
+  </AlertDialogTrigger>
+</AlertDialog>
+```
+
+### AlertDialogContent {Content Container}
+
+**Purpose:** Portal-rendered dialog container with built-in overlay and positioning
+
+**Interface:**
+
+```typescript
+interface AlertDialogContentProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Content> {
+  children: React.ReactNode; // Dialog content
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** Requires AlertDialog context for open state
+**Provides:** Automatically renders AlertDialogPortal and AlertDialogOverlay
+**Parent Requirements:** Must be child of AlertDialog root
+
+**Built-in Features:**
+
+- Portal rendering for proper z-index stacking
+- Automatic overlay with backdrop
+- Center positioning with responsive sizing
+- Open/close animations
+- Focus trap management
+
+**Usage Example:**
+
+```tsx
+<AlertDialog>
+  <AlertDialogContent>
+    {/* Header, body, and footer content */}
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### AlertDialogHeader {Layout Component}
+
+**Purpose:** Container for dialog title and description with proper spacing
+
+**Interface:**
+
+```typescript
+interface AlertDialogHeaderProps extends React.ComponentProps<"div"> {
+  children: React.ReactNode; // Usually AlertDialogTitle and AlertDialogDescription
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** None (pure layout component)
+**Parent Requirements:** Should be child of AlertDialogContent
+
+**Usage Example:**
+
+```tsx
+<AlertDialogContent>
+  <AlertDialogHeader>
+    <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+    <AlertDialogDescription>
+      This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+</AlertDialogContent>
+```
+
+### AlertDialogTitle {Accessibility Component}
+
+**Purpose:** Required title element for screen reader accessibility
+
+**Interface:**
+
+```typescript
+interface AlertDialogTitleProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Title> {
+  children: React.ReactNode; // Title text
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** Provides accessible name for dialog
+**Parent Requirements:** Should be within AlertDialogHeader
+**Accessibility:** Required for proper screen reader support
+
+**Usage Example:**
+
+```tsx
+<AlertDialogHeader>
+  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+</AlertDialogHeader>
+```
+
+### AlertDialogDescription {Accessibility Component}
+
+**Purpose:** Optional description that provides additional context for screen readers
+
+**Interface:**
+
+```typescript
+interface AlertDialogDescriptionProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Description> {
+  children: React.ReactNode; // Description text
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** Provides accessible description for dialog
+**Parent Requirements:** Should be within AlertDialogHeader
+
+**Usage Example:**
+
+```tsx
+<AlertDialogHeader>
+  <AlertDialogTitle>Delete Account</AlertDialogTitle>
+  <AlertDialogDescription>
+    This will permanently delete your account and all associated data. This
+    action cannot be undone.
+  </AlertDialogDescription>
+</AlertDialogHeader>
+```
+
+### AlertDialogFooter {Layout Component}
+
+**Purpose:** Container for action buttons with responsive layout
+
+**Interface:**
+
+```typescript
+interface AlertDialogFooterProps extends React.ComponentProps<"div"> {
+  children: React.ReactNode; // Usually AlertDialogCancel and AlertDialogAction
+  className?: string; // Additional styling
+}
+```
+
+**Context Dependencies:** None (pure layout component)
+**Parent Requirements:** Should be child of AlertDialogContent
+
+**Usage Example:**
+
+```tsx
+<AlertDialogContent>
+  <AlertDialogFooter>
+    <AlertDialogCancel>Cancel</AlertDialogCancel>
+    <AlertDialogAction>Delete</AlertDialogAction>
+  </AlertDialogFooter>
+</AlertDialogContent>
+```
+
+### AlertDialogAction {Action Component}
+
+**Purpose:** Primary action button that confirms the dialog action and closes the dialog
+
+**Interface:**
+
+```typescript
+interface AlertDialogActionProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Action> {
+  children: React.ReactNode; // Button text
+  className?: string; // Additional styling (inherits button styles)
+}
+```
+
+**Context Dependencies:** Automatically closes dialog when clicked
+**Parent Requirements:** Should be within AlertDialogFooter
+**Styling:** Inherits default button variant styles
+
+**Usage Example:**
+
+```tsx
+<AlertDialogFooter>
+  <AlertDialogAction onClick={handleDelete}>Delete Account</AlertDialogAction>
+</AlertDialogFooter>
+```
+
+### AlertDialogCancel {Cancel Component}
+
+**Purpose:** Cancel button that closes the dialog without performing the action
+
+**Interface:**
+
+```typescript
+interface AlertDialogCancelProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Cancel> {
+  children: React.ReactNode; // Button text
+  className?: string; // Additional styling (inherits outline button styles)
+}
+```
+
+**Context Dependencies:** Automatically closes dialog when clicked
+**Parent Requirements:** Should be within AlertDialogFooter
+**Styling:** Inherits outline button variant styles
+
+**Usage Example:**
+
+```tsx
+<AlertDialogFooter>
+  <AlertDialogCancel>Cancel</AlertDialogCancel>
+  <AlertDialogAction>Confirm</AlertDialogAction>
+</AlertDialogFooter>
+```
+
+### AlertDialogPortal {Internal Component}
+
+**Purpose:** Internal component for portal rendering (automatically used by AlertDialogContent)
+
+**Interface:**
+
+```typescript
+interface AlertDialogPortalProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Portal> {
+  children: React.ReactNode;
+  container?: HTMLElement; // Portal container
+}
+```
+
+**Usage:** Typically not used directly - automatically rendered by AlertDialogContent
+
+### AlertDialogOverlay {Internal Component}
+
+**Purpose:** Background overlay with backdrop (automatically used by AlertDialogContent)
+
+**Interface:**
+
+```typescript
+interface AlertDialogOverlayProps
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Overlay> {
+  className?: string; // Additional styling
+}
+```
+
+**Usage:** Typically not used directly - automatically rendered by AlertDialogContent
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive">Delete</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction>Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+```
+
+### Advanced Usage with Custom Logic
+
+```tsx
+function AdvancedExample() {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteUserAccount();
+      // Dialog will automatically close on action click
+      toast.success("Account deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive">Delete Account</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Account</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete your account and all associated data.
+            This action cannot be undone. Please type "DELETE" to confirm.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {/* Custom content area */}
+        <div className="py-4">
+          <Input
+            placeholder="Type DELETE to confirm"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+          />
+        </div>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={confirmText !== "DELETE" || isDeleting}
+            className="bg-destructive text-white"
+          >
+            {isDeleting ? "Deleting..." : "Delete Account"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+```
+
+### Controlled Dialog State
+
+```tsx
+function ControlledExample() {
+  const [open, setOpen] = useState(false);
+
+  const handleConfirm = () => {
+    // Perform action
+    performAction();
+    // Manually close dialog
+    setOpen(false);
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button onClick={() => setOpen(true)}>Open Controlled Dialog</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Controlled Dialog</AlertDialogTitle>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setOpen(false)}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm}>Confirm</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+1. **Trigger Activation**: User clicks AlertDialogTrigger
+2. **State Update**: Dialog context updates open state to true
+3. **Portal Rendering**: AlertDialogContent renders in portal with overlay
+4. **Focus Management**: Focus moves to dialog content
+5. **User Interaction**: User clicks action or cancel button
+6. **State Closure**: Dialog context updates open state to false
+7. **Focus Restoration**: Focus returns to original trigger element
+
+### Context Sharing
+
+- **Dialog State**: Open/closed state managed by AlertDialog root
+- **Focus Management**: Automatic focus trap and restoration
+- **Keyboard Events**: Escape key handling for closing
+- **Accessibility**: ARIA attributes automatically applied
+
+### Event Handling
+
+- **Click Outside**: Automatically closes dialog when clicking overlay
+- **Escape Key**: Closes dialog and restores focus
+- **Action Buttons**: AlertDialogAction and AlertDialogCancel automatically close dialog
+- **Custom Handlers**: Can be added to action buttons for additional logic
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always include AlertDialogTitle** for screen reader accessibility
+- **Use AlertDialogDescription** to provide context about the consequences of the action
+- **Place destructive actions on the right** (AlertDialogAction) with cancel on the left
+- **Use appropriate button variants** (destructive for dangerous actions)
+- **Provide clear, action-specific text** for buttons (e.g., "Delete Account" instead of "OK")
+
+### Accessibility
+
+- **Focus Management**: Dialog automatically traps focus and restores it on close
+- **Screen Reader Support**: AlertDialogTitle provides accessible name for dialog
+- **Keyboard Navigation**: Escape key closes dialog, Tab cycles through focusable elements
+- **ARIA Attributes**: Automatically applied for proper screen reader support
+- **Color Contrast**: Ensure action buttons meet contrast requirements for destructive actions
+
+### Performance
+
+- **Portal Rendering**: Content only renders when dialog is open
+- **Animation Optimization**: Uses CSS transforms for smooth open/close animations
+- **Event Handling**: Minimal event listeners, cleaned up automatically
+- **Focus Optimization**: Efficient focus management without layout thrashing
+
+## Common Patterns
+
+### Pattern 1: Destructive Action Confirmation
+
+```tsx
+// Recommended pattern for delete/destructive actions
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button variant="destructive" size="sm">
+      <Trash2 className="h-4 w-4" />
+      Delete
+    </Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete Item</AlertDialogTitle>
+      <AlertDialogDescription>
+        This will permanently delete "{itemName}". This action cannot be undone.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        onClick={handleDelete}
+        className="bg-destructive text-white"
+      >
+        Delete
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### Pattern 2: Form Submission Confirmation
+
+```tsx
+// Pattern for confirming form submissions with consequences
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button type="button">Submit Application</Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Submit Application</AlertDialogTitle>
+      <AlertDialogDescription>
+        Once submitted, you cannot edit your application. Please review all
+        information before confirming.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Review Again</AlertDialogCancel>
+      <AlertDialogAction onClick={handleSubmit}>
+        Submit Application
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### Pattern 3: Error Recovery Dialog
+
+```tsx
+// Pattern for error states requiring user intervention
+<AlertDialog open={hasError} onOpenChange={setHasError}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Connection Error</AlertDialogTitle>
+      <AlertDialogDescription>
+        Unable to save your changes. Please check your connection and try again.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel onClick={handleDiscard}>
+        Discard Changes
+      </AlertDialogCancel>
+      <AlertDialogAction onClick={handleRetry}>Try Again</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```

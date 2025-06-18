@@ -1,0 +1,590 @@
+# Command Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate command palette functionality
+
+### When to Use
+
+The Command component group is ideal for creating searchable command palettes, keyboard-driven interfaces, and contextual menus. Use it when you need to:
+
+- Provide quick access to application actions through a searchable interface
+- Create keyboard-accessible navigation systems (commonly triggered by `⌘K` or `Ctrl+K`)
+- Build combobox-style interfaces with filtering capabilities
+- Implement documentation or help search features
+- Create developer tools or admin panels with command-based interactions
+
+### Architecture
+
+**Strong Coupling**: The Command component group follows a compositional hierarchy where components are designed to work together as a cohesive system. The root `Command` component provides the context and styling foundation, while child components handle specific functionality like input, display, and grouping.
+
+### Component Interdependencies
+
+The Command component group has a clear hierarchical structure:
+
+- **Command** serves as the root container providing the search context
+- **CommandInput** provides the search interface and must be used within Command
+- **CommandList** contains all selectable items and groups
+- **CommandGroup** organizes related items with optional headings
+- **CommandItem** represents individual selectable actions
+- **CommandDialog** combines Command with Dialog for modal interfaces
+- **CommandEmpty**, **CommandSeparator**, and **CommandShortcut** provide additional UI elements
+
+Data flows from the input through the filtering system to display relevant items, with keyboard navigation and selection events handled by the root Command context.
+
+## Components
+
+### Command {Primary Component}
+
+**Purpose:** The root container that provides search context, keyboard navigation, and styling foundation for the command palette.
+
+**Interface:**
+
+```typescript
+interface CommandProps extends React.ComponentProps<typeof CommandPrimitive> {
+  className?: string;
+  children: React.ReactNode; // Required child components
+}
+```
+
+**Dependencies:** Built on top of `cmdk` CommandPrimitive
+**Provides:** Search context, keyboard navigation, and styling foundation to child components
+
+**Usage Example:**
+
+```tsx
+import { Command } from "@/components/ui/command";
+
+function Example() {
+  return (
+    <Command className="rounded-lg border shadow-md">
+      {/* CommandInput, CommandList, and other child components */}
+    </Command>
+  );
+}
+```
+
+### CommandDialog {Modal Wrapper Component}
+
+**Purpose:** Combines the Command component with Dialog to create a modal command palette interface.
+
+**Interface:**
+
+```typescript
+interface CommandDialogProps extends React.ComponentProps<typeof Dialog> {
+  title?: string; // Default: "Command Palette"
+  description?: string; // Default: "Search for a command to run..."
+  children: React.ReactNode; // Command content
+}
+```
+
+**Context Dependencies:** Integrates with Dialog component for modal behavior
+**Parent Requirements:** Standalone component that wraps Command internally
+
+**Usage Example:**
+
+```tsx
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandItem,
+} from "@/components/ui/command";
+
+function Example() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Global Command Menu"
+    >
+      <CommandInput placeholder="Type a command..." />
+      <CommandList>
+        <CommandItem>Search files</CommandItem>
+        <CommandItem>Create new document</CommandItem>
+      </CommandList>
+    </CommandDialog>
+  );
+}
+```
+
+### CommandInput {Input Component}
+
+**Purpose:** Provides the search input interface with integrated search icon and styling.
+
+**Interface:**
+
+```typescript
+interface CommandInputProps
+  extends React.ComponentProps<typeof CommandPrimitive.Input> {
+  className?: string;
+  placeholder?: string;
+}
+```
+
+**Context Dependencies:** Must be used within Command component to function properly
+**Parent Requirements:** Requires Command as parent component
+
+**Usage Example:**
+
+```tsx
+// Must be used within Command
+<Command>
+  <CommandInput placeholder="Search commands..." />
+  {/* Other command components */}
+</Command>
+```
+
+### CommandList {Container Component}
+
+**Purpose:** Scrollable container for command items and groups with keyboard navigation support.
+
+**Interface:**
+
+```typescript
+interface CommandListProps
+  extends React.ComponentProps<typeof CommandPrimitive.List> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Context Dependencies:** Requires Command context for proper filtering and navigation
+**Parent Requirements:** Must be used within Command component
+
+**Usage Example:**
+
+```tsx
+<Command>
+  <CommandInput />
+  <CommandList>
+    <CommandEmpty>No results found.</CommandEmpty>
+    <CommandGroup heading="Actions">
+      <CommandItem>Create file</CommandItem>
+      <CommandItem>Open folder</CommandItem>
+    </CommandGroup>
+  </CommandList>
+</Command>
+```
+
+### CommandGroup {Grouping Component}
+
+**Purpose:** Groups related command items with optional headings for better organization.
+
+**Interface:**
+
+```typescript
+interface CommandGroupProps
+  extends React.ComponentProps<typeof CommandPrimitive.Group> {
+  className?: string;
+  heading?: string; // Optional group heading
+  children: React.ReactNode;
+}
+```
+
+**Context Dependencies:** Integrates with Command's filtering system
+**Parent Requirements:** Should be used within CommandList
+
+**Usage Example:**
+
+```tsx
+<CommandList>
+  <CommandGroup heading="File Operations">
+    <CommandItem>New file</CommandItem>
+    <CommandItem>Open file</CommandItem>
+  </CommandGroup>
+  <CommandGroup heading="Settings">
+    <CommandItem>Preferences</CommandItem>
+    <CommandItem>Extensions</CommandItem>
+  </CommandGroup>
+</CommandList>
+```
+
+### CommandItem {Action Component}
+
+**Purpose:** Individual selectable items that represent commands or actions in the palette.
+
+**Interface:**
+
+```typescript
+interface CommandItemProps
+  extends React.ComponentProps<typeof CommandPrimitive.Item> {
+  className?: string;
+  children: React.ReactNode;
+  onSelect?: () => void; // Callback when item is selected
+  disabled?: boolean;
+}
+```
+
+**Context Dependencies:** Receives selection state and keyboard navigation from Command context
+**Parent Requirements:** Should be used within CommandList or CommandGroup
+
+**Usage Example:**
+
+```tsx
+<CommandItem onSelect={() => console.log("Action executed")} disabled={false}>
+  <FileIcon className="mr-2 h-4 w-4" />
+  Create new file
+  <CommandShortcut>⌘N</CommandShortcut>
+</CommandItem>
+```
+
+### CommandEmpty {Fallback Component}
+
+**Purpose:** Displays when no command items match the current search query.
+
+**Interface:**
+
+```typescript
+interface CommandEmptyProps
+  extends React.ComponentProps<typeof CommandPrimitive.Empty> {
+  className?: string;
+  children?: React.ReactNode; // Default: "No results found."
+}
+```
+
+**Usage Example:**
+
+```tsx
+<CommandList>
+  <CommandEmpty>No commands found. Try a different search.</CommandEmpty>
+  {/* Command items */}
+</CommandList>
+```
+
+### CommandSeparator {Utility Component}
+
+**Purpose:** Visual separator for grouping and organizing command items.
+
+**Interface:**
+
+```typescript
+interface CommandSeparatorProps
+  extends React.ComponentProps<typeof CommandPrimitive.Separator> {
+  className?: string;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<CommandList>
+  <CommandGroup heading="File">
+    <CommandItem>New</CommandItem>
+    <CommandItem>Open</CommandItem>
+  </CommandGroup>
+  <CommandSeparator />
+  <CommandGroup heading="Edit">
+    <CommandItem>Cut</CommandItem>
+    <CommandItem>Copy</CommandItem>
+  </CommandGroup>
+</CommandList>
+```
+
+### CommandShortcut {Enhancement Component}
+
+**Purpose:** Displays keyboard shortcuts associated with command items.
+
+**Interface:**
+
+```typescript
+interface CommandShortcutProps extends React.ComponentProps<"span"> {
+  className?: string;
+  children: React.ReactNode; // Shortcut text like "⌘K"
+}
+```
+
+**Usage Example:**
+
+```tsx
+<CommandItem>
+  Save file
+  <CommandShortcut>⌘S</CommandShortcut>
+</CommandItem>
+```
+
+## Integration Patterns
+
+### Basic Command Palette
+
+```tsx
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+
+function BasicCommandPalette() {
+  return (
+    <Command className="rounded-lg border shadow-md max-w-[450px]">
+      <CommandInput placeholder="Type a command or search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+
+        <CommandGroup heading="Suggestions">
+          <CommandItem>Calendar</CommandItem>
+          <CommandItem>Search Emoji</CommandItem>
+          <CommandItem>Calculator</CommandItem>
+        </CommandGroup>
+
+        <CommandGroup heading="Settings">
+          <CommandItem>Profile</CommandItem>
+          <CommandItem>Billing</CommandItem>
+          <CommandItem>Settings</CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  );
+}
+```
+
+### Modal Command Dialog
+
+```tsx
+import { useState, useEffect } from "react";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator,
+  CommandShortcut,
+} from "@/components/ui/command";
+
+function GlobalCommandMenu() {
+  const [open, setOpen] = useState(false);
+
+  // Toggle with ⌘K
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  return (
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput placeholder="Type a command or search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+
+        <CommandGroup heading="File">
+          <CommandItem onSelect={() => console.log("New file")}>
+            <FileIcon className="mr-2 h-4 w-4" />
+            New file
+            <CommandShortcut>⌘N</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => console.log("Open file")}>
+            <FolderIcon className="mr-2 h-4 w-4" />
+            Open file
+            <CommandShortcut>⌘O</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Edit">
+          <CommandItem>
+            <SearchIcon className="mr-2 h-4 w-4" />
+            Find and replace
+            <CommandShortcut>⌘F</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
+  );
+}
+```
+
+### Advanced Command Palette with State
+
+```tsx
+import { useState } from "react";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+
+function AdvancedCommandPalette() {
+  const [pages, setPages] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const page = pages[pages.length - 1];
+
+  return (
+    <Command
+      className="rounded-lg border shadow-md max-w-[450px]"
+      onKeyDown={(e) => {
+        // Go back on Escape or Backspace when no search
+        if (e.key === "Escape" || (e.key === "Backspace" && !search)) {
+          e.preventDefault();
+          setPages((pages) => pages.slice(0, -1));
+        }
+      }}
+    >
+      <CommandInput
+        value={search}
+        onValueChange={setSearch}
+        placeholder={page ? `Search ${page}...` : "Type a command or search..."}
+      />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+
+        {!page && (
+          <CommandGroup heading="Browse">
+            <CommandItem onSelect={() => setPages([...pages, "projects"])}>
+              <FolderIcon className="mr-2 h-4 w-4" />
+              Search projects…
+            </CommandItem>
+            <CommandItem onSelect={() => setPages([...pages, "teams"])}>
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Join a team…
+            </CommandItem>
+          </CommandGroup>
+        )}
+
+        {page === "projects" && (
+          <CommandGroup heading="Projects">
+            <CommandItem>React Dashboard</CommandItem>
+            <CommandItem>Vue Application</CommandItem>
+            <CommandItem>Node.js API</CommandItem>
+          </CommandGroup>
+        )}
+
+        {page === "teams" && (
+          <CommandGroup heading="Teams">
+            <CommandItem>Frontend Team</CommandItem>
+            <CommandItem>Backend Team</CommandItem>
+            <CommandItem>Design Team</CommandItem>
+          </CommandGroup>
+        )}
+      </CommandList>
+    </Command>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Command component manages the search state and filtering logic. When users type in the CommandInput, the search query is processed by the underlying cmdk library, which automatically filters CommandItems based on their content. Selected items trigger their `onSelect` callbacks, and keyboard navigation is handled automatically.
+
+### Context Sharing
+
+The root Command component provides context for search state, keyboard navigation, and item selection. All child components access this context to coordinate their behavior, ensuring consistent filtering, highlighting, and navigation throughout the command palette.
+
+### Event Handling
+
+- **Search**: Input changes trigger filtering of command items
+- **Selection**: Arrow keys navigate between items, Enter selects the highlighted item
+- **Shortcuts**: Individual items can display and handle keyboard shortcuts
+- **Escape**: Closes dialogs or navigates back in nested command structures
+
+## Best Practices
+
+### Usage Guidelines
+
+- Always wrap command items in a Command component to ensure proper context and functionality
+- Use CommandDialog for global command palettes triggered by keyboard shortcuts (⌘K/Ctrl+K)
+- Group related actions using CommandGroup with descriptive headings for better organization
+- Include CommandEmpty to provide feedback when no results match the search query
+- Add CommandShortcut to items that have keyboard shortcuts for better discoverability
+
+### Accessibility
+
+- The Command component includes proper ARIA attributes for screen readers
+- Keyboard navigation is built-in with arrow keys for navigation and Enter for selection
+- The CommandDialog manages focus properly when opening and closing
+- Use descriptive text for CommandEmpty states to help users understand why no results appear
+- Ensure CommandItem content is descriptive enough for screen readers
+
+### Performance
+
+- The cmdk library handles efficient filtering and rendering of large item lists
+- Use React.memo for CommandItem components if rendering performance becomes an issue with many items
+- Consider virtualizing very large lists of command items for better performance
+- Lazy load command groups or items that depend on external data
+
+## Common Patterns
+
+### Pattern 1: Global App Command Palette
+
+```tsx
+// Typical app-wide command palette with keyboard shortcut
+function AppCommandPalette() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(true);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  return (
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput placeholder="Search commands..." />
+      <CommandList>
+        <CommandEmpty>No commands found.</CommandEmpty>
+        <CommandGroup heading="Navigation">
+          <CommandItem onSelect={() => router.push("/dashboard")}>
+            Go to Dashboard
+          </CommandItem>
+          <CommandItem onSelect={() => router.push("/settings")}>
+            Open Settings
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
+  );
+}
+```
+
+### Pattern 2: Contextual Search Interface
+
+```tsx
+// Search interface for specific content types
+function DocumentSearchCommand() {
+  const [documents, setDocuments] = useState([]);
+
+  return (
+    <Command className="border rounded-lg">
+      <CommandInput placeholder="Search documents..." />
+      <CommandList>
+        <CommandEmpty>No documents found.</CommandEmpty>
+        <CommandGroup heading="Recent Documents">
+          {documents.map((doc) => (
+            <CommandItem key={doc.id} onSelect={() => openDocument(doc.id)}>
+              <FileTextIcon className="mr-2 h-4 w-4" />
+              {doc.title}
+              <CommandShortcut>{doc.shortcut}</CommandShortcut>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  );
+}
+```

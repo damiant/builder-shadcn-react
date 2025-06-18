@@ -1,0 +1,373 @@
+# Button Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate button functionality
+
+### When to Use
+
+The Button component is a versatile interactive element that should be used for user actions and navigation. Use buttons when you need to:
+
+- Trigger actions like form submissions, data processing, or API calls
+- Navigate users to different pages or sections
+- Open dialogs, modals, or dropdown menus
+- Provide primary, secondary, or destructive actions
+- Create interactive elements with consistent styling and behavior
+- Implement accessible controls with proper focus management
+- Display icons alongside text or as icon-only buttons
+
+### Architecture
+
+**No Coupling**: The Button component is a standalone component that can be used independently without requiring other components. It provides a consistent interface for interactive elements across the application.
+
+## Components
+
+### Button {Standalone Component}
+
+A versatile interactive element with multiple visual variants and size options.
+
+**Purpose:** Creates accessible, styled buttons with consistent behavior and appearance across the application. Supports polymorphic rendering through the `asChild` prop for flexibility.
+
+**Interface:**
+
+```typescript
+interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  className?: string;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+  asChild?: boolean;
+  children: React.ReactNode;
+}
+```
+
+**Usage Example:**
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+function BasicExample() {
+  return (
+    <Button onClick={() => console.log("Button clicked")}>Click me</Button>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+// Standard button usage
+function BasicButtons() {
+  return (
+    <div className="space-x-2">
+      <Button>Default Button</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
+    </div>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Download, Plus, Trash2 } from "lucide-react";
+
+// Advanced button usage with variants and icons
+function AdvancedButtons() {
+  return (
+    <div className="space-y-4">
+      {/* Buttons with icons */}
+      <div className="space-x-2">
+        <Button>
+          <Plus />
+          Add Item
+        </Button>
+        <Button variant="outline">
+          <Download />
+          Download
+        </Button>
+      </div>
+
+      {/* Different sizes */}
+      <div className="space-x-2">
+        <Button size="sm">Small</Button>
+        <Button size="default">Default</Button>
+        <Button size="lg">Large</Button>
+      </div>
+
+      {/* Icon-only buttons */}
+      <div className="space-x-2">
+        <Button size="icon" variant="outline">
+          <Plus />
+        </Button>
+        <Button size="icon" variant="destructive">
+          <Trash2 />
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Common Variations
+
+#### As Child (Polymorphic Usage)
+
+```tsx
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+// Button as link element
+function ButtonAsLink() {
+  return (
+    <Button asChild>
+      <Link href="/dashboard">Go to Dashboard</Link>
+    </Button>
+  );
+}
+
+// Button as external link
+function ExternalLink() {
+  return (
+    <Button asChild variant="outline">
+      <a href="https://example.com" target="_blank" rel="noopener noreferrer">
+        <ExternalLink />
+        Visit Website
+      </a>
+    </Button>
+  );
+}
+```
+
+#### Form Actions
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+function FormActions() {
+  return (
+    <form className="space-y-4">
+      {/* Form content */}
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline">
+          Cancel
+        </Button>
+        <Button type="submit">Save Changes</Button>
+      </div>
+    </form>
+  );
+}
+```
+
+#### Loading States
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
+function LoadingButton({ isLoading }: { isLoading: boolean }) {
+  return (
+    <Button disabled={isLoading}>
+      {isLoading && <Loader2 className="animate-spin" />}
+      {isLoading ? "Saving..." : "Save"}
+    </Button>
+  );
+}
+```
+
+#### Destructive Actions
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+
+function DeleteButton({ onDelete }: { onDelete: () => void }) {
+  return (
+    <Button variant="destructive" onClick={onDelete}>
+      <Trash2 />
+      Delete Item
+    </Button>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Button component is self-contained and follows standard React patterns:
+
+- Props are passed directly to the component
+- Event handlers (onClick, onSubmit, etc.) are passed as props
+- State management happens in parent components
+- No internal state except for built-in button behavior (focus, hover, etc.)
+
+### Integration with Other Components
+
+Buttons commonly integrate with:
+
+- **Form components**: As submit buttons within Form contexts
+- **Dialog/Modal components**: As trigger elements or action buttons
+- **Card components**: Within CardAction, CardFooter, or CardContent
+- **Navigation components**: As menu items or navigation triggers
+- **Dropdown/Context menus**: As trigger elements
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Choose appropriate variants**: Use `default` for primary actions, `secondary` for secondary actions, `outline` for neutral actions, and `destructive` for dangerous operations
+- **Use consistent sizing**: Stick to the provided size variants rather than custom sizing to maintain visual consistency
+- **Include meaningful icons**: When using icons, ensure they enhance understanding of the button's purpose
+- **Provide clear labels**: Button text should clearly communicate the action that will be performed
+
+### Accessibility
+
+- Buttons automatically include proper ARIA attributes and keyboard navigation
+- Use semantic HTML button elements (default behavior) for proper screen reader support
+- When using `asChild` with links, ensure proper link semantics are maintained
+- Provide adequate color contrast for all button variants
+- Include focus-visible styling for keyboard navigation
+- Use `disabled` state appropriately and provide feedback for loading states
+
+### Performance
+
+- Button component is lightweight with no React context overhead
+- Uses CSS variables and utility classes for efficient styling
+- Icon SVGs should be optimized and use consistent sizing
+- Consider debouncing for rapid-fire actions to prevent accidental multiple submissions
+
+## Common Patterns
+
+### Pattern 1: Action Groups
+
+```tsx
+// Related actions grouped together with consistent spacing and hierarchy
+function ActionGroup() {
+  return (
+    <div className="flex items-center justify-end space-x-2">
+      <Button variant="outline" size="sm">
+        Cancel
+      </Button>
+      <Button variant="secondary" size="sm">
+        Save Draft
+      </Button>
+      <Button size="sm">Publish</Button>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Icon Button Grid
+
+```tsx
+import { Settings, User, Bell, Help } from "lucide-react";
+
+// Grid of icon buttons for quick actions or navigation
+function IconButtonGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <Button size="icon" variant="outline">
+        <Settings />
+      </Button>
+      <Button size="icon" variant="outline">
+        <User />
+      </Button>
+      <Button size="icon" variant="outline">
+        <Bell />
+      </Button>
+      <Button size="icon" variant="outline">
+        <Help />
+      </Button>
+    </div>
+  );
+}
+```
+
+### Pattern 3: Call-to-Action Section
+
+```tsx
+// Primary call-to-action with supporting secondary actions
+function CallToAction() {
+  return (
+    <div className="text-center space-y-4">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">Ready to get started?</h2>
+        <p className="text-muted-foreground">
+          Join thousands of users already using our platform.
+        </p>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+        <Button size="lg">Get Started Free</Button>
+        <Button variant="outline" size="lg">
+          Learn More
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 4: Table Actions
+
+```tsx
+import { Edit, Trash2, MoreHorizontal } from "lucide-react";
+
+// Button patterns commonly used in data tables
+function TableRowActions({ item }) {
+  return (
+    <div className="flex items-center space-x-1">
+      <Button size="icon" variant="ghost">
+        <Edit />
+      </Button>
+      <Button size="icon" variant="ghost">
+        <Trash2 />
+      </Button>
+      <Button size="icon" variant="ghost">
+        <MoreHorizontal />
+      </Button>
+    </div>
+  );
+}
+```
+
+## Variant Details
+
+### Visual Variants
+
+- **default**: Primary brand-colored button for main actions
+- **destructive**: Red-themed button for dangerous or delete actions
+- **outline**: Bordered button for secondary actions that need more emphasis than ghost
+- **secondary**: Muted background button for less prominent secondary actions
+- **ghost**: Minimal button for subtle actions, typically used in menus or toolbars
+- **link**: Text-only button that appears as a link
+
+### Size Variants
+
+- **default**: Standard button size (36px height) suitable for most use cases
+- **sm**: Smaller button (32px height) for compact interfaces or secondary actions
+- **lg**: Larger button (40px height) for prominent calls-to-action
+- **icon**: Square button optimized for icon-only usage
+
+### Technical Features
+
+- **Polymorphic rendering**: Use `asChild` prop to render as different elements while maintaining button styling
+- **Icon support**: Built-in spacing and sizing for icons within buttons
+- **Focus management**: Proper focus-visible states and keyboard navigation
+- **Responsive design**: Consistent behavior across different screen sizes
+- **Custom variants**: Extend using the `buttonVariants` utility for custom styling needs

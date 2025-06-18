@@ -1,0 +1,600 @@
+---
+
+# NavigationMenu Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate navigation menu with required hierarchical structure
+
+### When to Use
+
+NavigationMenu components are ideal for creating accessible, keyboard-navigable menu systems in web applications. Use this component group when you need:
+
+- **Primary navigation** with dropdown submenus for main site sections
+- **Mega menus** with rich content including links, descriptions, and media
+- **Multi-level navigation** with nested menu structures
+- **Accessible navigation** that works with screen readers and keyboard navigation
+- **Mobile-responsive menus** that adapt to different screen sizes
+- **Complex navigation hierarchies** where simple links aren't sufficient
+
+This component group excels in scenarios like header navigation bars, sidebar menus, and any navigation that requires hover/focus states with expandable content panels.
+
+### Architecture
+
+**Critical/Strong Coupling**: The NavigationMenu components form a tightly coupled system with required hierarchical relationships and shared navigation state. Components depend on each other through:
+
+- **Shared Context**: Navigation state, keyboard navigation, and ARIA relationships
+- **Required Composition**: Specific parent-child relationships must be maintained
+- **State Management**: Open/close states, focus management, and viewport positioning
+- **Accessibility**: Coordinated ARIA attributes and keyboard event handling
+
+### Component Interdependencies
+
+The NavigationMenu system requires specific composition patterns:
+
+```
+NavigationMenu (Root)
+├── NavigationMenuList (Required container)
+│   ├── NavigationMenuItem (Menu items container)
+│   │   ├── NavigationMenuTrigger (Trigger for dropdown)
+│   │   └── NavigationMenuContent (Dropdown content)
+│   │       └── NavigationMenuLink (Links within content)
+│   └── NavigationMenuIndicator (Visual indicator)
+└── NavigationMenuViewport (Content positioning)
+```
+
+**Required Relationships:**
+
+- `NavigationMenuList` must be a direct child of `NavigationMenu`
+- `NavigationMenuItem` must be a child of `NavigationMenuList`
+- `NavigationMenuContent` must be a child of `NavigationMenuItem`
+- `NavigationMenuTrigger` must be a sibling of `NavigationMenuContent`
+- `NavigationMenuViewport` is automatically included unless disabled
+
+**Communication Patterns:**
+
+- Focus management cascades through the hierarchy
+- Open/close states propagate from triggers to content
+- Keyboard navigation coordinates between all components
+- ARIA relationships establish semantic connections
+
+## Components
+
+### NavigationMenu {Primary Component}
+
+**Purpose:** The root container that provides navigation context, state management, and accessibility foundations for the entire menu system.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Root> {
+  children: React.ReactNode; // Required NavigationMenuList and other components
+  className?: string; // Additional CSS classes
+  viewport?: boolean; // Whether to include viewport positioning (default: true)
+}
+```
+
+**Dependencies:** None (root component)
+**Provides:** Navigation context, state management, focus coordination, and ARIA relationships to all child components
+
+**Usage Example:**
+
+```tsx
+import { NavigationMenu } from "@/components/ui/navigation-menu";
+
+function Example() {
+  return (
+    <NavigationMenu className="relative flex max-w-max">
+      {/* NavigationMenuList and other components go here */}
+    </NavigationMenu>
+  );
+}
+```
+
+### NavigationMenuList {Required Container}
+
+**Purpose:** Container for all navigation menu items that establishes the list structure and coordinates item interactions.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuListProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.List> {
+  children: React.ReactNode; // NavigationMenuItem components
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Must be used within NavigationMenu for proper state management
+**Parent Requirements:** Direct child of NavigationMenu component
+
+**Usage Example:**
+
+```tsx
+// Must be used within NavigationMenu
+<NavigationMenu>
+  <NavigationMenuList className="flex gap-1">
+    {/* NavigationMenuItem components */}
+  </NavigationMenuList>
+</NavigationMenu>
+```
+
+### NavigationMenuItem {Item Container}
+
+**Purpose:** Individual menu item container that manages trigger-content relationships and provides scoped menu item state.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuItemProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Item> {
+  children: React.ReactNode; // NavigationMenuTrigger and NavigationMenuContent
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Must be within NavigationMenuList for proper navigation flow
+**Parent Requirements:** Direct child of NavigationMenuList
+
+**Usage Example:**
+
+```tsx
+<NavigationMenuList>
+  <NavigationMenuItem>
+    <NavigationMenuTrigger>Menu Item</NavigationMenuTrigger>
+    <NavigationMenuContent>{/* Content goes here */}</NavigationMenuContent>
+  </NavigationMenuItem>
+</NavigationMenuList>
+```
+
+### NavigationMenuTrigger {Interactive Trigger}
+
+**Purpose:** The clickable/hoverable element that opens menu content, with built-in chevron icon and interaction states.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuTriggerProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> {
+  children: React.ReactNode; // Trigger text/content
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Inherits trigger styling and behavior from navigationMenuTriggerStyle
+**Parent Requirements:** Must be child of NavigationMenuItem alongside NavigationMenuContent
+
+**Usage Example:**
+
+```tsx
+<NavigationMenuItem>
+  <NavigationMenuTrigger>
+    Products
+    {/* ChevronDownIcon automatically included */}
+  </NavigationMenuTrigger>
+  <NavigationMenuContent>{/* Related content */}</NavigationMenuContent>
+</NavigationMenuItem>
+```
+
+### NavigationMenuContent {Dropdown Content}
+
+**Purpose:** The expandable content panel that appears when a menu item is triggered, with built-in positioning and animations.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuContentProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Content> {
+  children: React.ReactNode; // Content including NavigationMenuLink components
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Positioned relative to NavigationMenuViewport and parent NavigationMenuItem
+**Parent Requirements:** Must be child of NavigationMenuItem alongside NavigationMenuTrigger
+
+**Usage Example:**
+
+```tsx
+<NavigationMenuItem>
+  <NavigationMenuTrigger>Services</NavigationMenuTrigger>
+  <NavigationMenuContent>
+    <div className="grid gap-3 p-4">
+      <NavigationMenuLink href="/consulting">Consulting</NavigationMenuLink>
+      <NavigationMenuLink href="/support">Support</NavigationMenuLink>
+    </div>
+  </NavigationMenuContent>
+</NavigationMenuItem>
+```
+
+### NavigationMenuLink {Link Component}
+
+**Purpose:** Accessible link component designed for use within navigation content with proper focus states and styling.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuLinkProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Link> {
+  children: React.ReactNode; // Link content
+  className?: string; // Additional CSS classes
+  href?: string; // Link destination
+}
+```
+
+**Context Dependencies:** Optimized for use within NavigationMenuContent
+**Parent Requirements:** Typically used within NavigationMenuContent
+
+**Usage Example:**
+
+```tsx
+<NavigationMenuContent>
+  <NavigationMenuLink href="/about" className="block">
+    <div className="font-medium">About Us</div>
+    <div className="text-sm text-muted-foreground">
+      Learn more about our company
+    </div>
+  </NavigationMenuLink>
+</NavigationMenuContent>
+```
+
+### NavigationMenuIndicator {Visual Indicator}
+
+**Purpose:** Provides visual feedback showing which menu item is currently active or hovered, with smooth animations.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuIndicatorProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Indicator> {
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Automatically positioned based on active NavigationMenuItem
+**Parent Requirements:** Typically placed within NavigationMenuList
+
+**Usage Example:**
+
+```tsx
+<NavigationMenuList>
+  <NavigationMenuItem>
+    <NavigationMenuTrigger>Home</NavigationMenuTrigger>
+  </NavigationMenuItem>
+  <NavigationMenuIndicator />
+</NavigationMenuList>
+```
+
+### NavigationMenuViewport {Content Positioning}
+
+**Purpose:** Manages the positioning and animations of NavigationMenuContent components, providing consistent layout and smooth transitions.
+
+**Interface:**
+
+```typescript
+interface NavigationMenuViewportProps
+  extends React.ComponentProps<typeof NavigationMenuPrimitive.Viewport> {
+  className?: string; // Additional CSS classes
+}
+```
+
+**Context Dependencies:** Coordinates with all NavigationMenuContent components for positioning
+**Parent Requirements:** Automatically included in NavigationMenu unless viewport={false}
+
+**Usage Example:**
+
+```tsx
+<NavigationMenu viewport={false}>
+  {/* Menu content */}
+  {/* Manual viewport control */}
+  <NavigationMenuViewport className="custom-positioning" />
+</NavigationMenu>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <NavigationMenuLink href="/products/web">
+              Web Applications
+            </NavigationMenuLink>
+            <NavigationMenuLink href="/products/mobile">
+              Mobile Apps
+            </NavigationMenuLink>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Services</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <NavigationMenuLink href="/services/consulting">
+              Consulting
+            </NavigationMenuLink>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+// Complex usage with rich content and custom styling
+function AdvancedExample() {
+  return (
+    <NavigationMenu className="relative z-10 flex max-w-max">
+      <NavigationMenuList className="flex space-x-1">
+        <NavigationMenuItem>
+          <NavigationMenuTrigger className="text-lg font-medium">
+            Products
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <div className="grid w-[600px] gap-3 p-4 grid-cols-2">
+              <NavigationMenuLink
+                href="/products/web"
+                className="block space-y-1 rounded-md p-3 hover:bg-accent"
+              >
+                <div className="font-medium">Web Applications</div>
+                <div className="text-sm text-muted-foreground">
+                  Full-stack web solutions
+                </div>
+              </NavigationMenuLink>
+              <NavigationMenuLink
+                href="/products/mobile"
+                className="block space-y-1 rounded-md p-3 hover:bg-accent"
+              >
+                <div className="font-medium">Mobile Apps</div>
+                <div className="text-sm text-muted-foreground">
+                  iOS and Android applications
+                </div>
+              </NavigationMenuLink>
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink
+            href="/about"
+            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+          >
+            About
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// Mega menu with grid layout
+function MegaMenuExample() {
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <div className="grid w-[800px] gap-6 p-6 grid-cols-3">
+              <div>
+                <h3 className="font-medium mb-2">Development</h3>
+                <NavigationMenuLink href="/dev/frontend">
+                  Frontend
+                </NavigationMenuLink>
+                <NavigationMenuLink href="/dev/backend">
+                  Backend
+                </NavigationMenuLink>
+                <NavigationMenuLink href="/dev/fullstack">
+                  Full Stack
+                </NavigationMenuLink>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Design</h3>
+                <NavigationMenuLink href="/design/ui">
+                  UI Design
+                </NavigationMenuLink>
+                <NavigationMenuLink href="/design/ux">
+                  UX Design
+                </NavigationMenuLink>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Marketing</h3>
+                <NavigationMenuLink href="/marketing/seo">
+                  SEO
+                </NavigationMenuLink>
+                <NavigationMenuLink href="/marketing/content">
+                  Content
+                </NavigationMenuLink>
+              </div>
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+
+// Mixed navigation with dropdowns and direct links
+function MixedNavigationExample() {
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
+            Home
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            {/* Dropdown content */}
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink
+            href="/contact"
+            className={navigationMenuTriggerStyle()}
+          >
+            Contact
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+1. **State Initiation**: NavigationMenu establishes the root navigation context
+2. **Item Management**: NavigationMenuList coordinates between individual menu items
+3. **Trigger Interaction**: NavigationMenuTrigger captures user interactions (click, hover, keyboard)
+4. **Content Display**: NavigationMenuContent receives visibility state from its paired trigger
+5. **Link Activation**: NavigationMenuLink components handle navigation and close menu state
+6. **Visual Feedback**: NavigationMenuIndicator reflects the current active state
+7. **Layout Coordination**: NavigationMenuViewport manages positioning and animations
+
+### Context Sharing
+
+- **Navigation State**: Open/closed state of menu items
+- **Focus Management**: Keyboard navigation coordination between components
+- **ARIA Relationships**: Accessible relationships between triggers and content
+- **Viewport Positioning**: Shared positioning context for content panels
+- **Animation Coordination**: Synchronized enter/exit animations
+
+### Event Handling
+
+- **Keyboard Events**: Arrow keys, Enter, Escape bubble through the component hierarchy
+- **Mouse Events**: Hover states coordinate between trigger and content
+- **Focus Events**: Focus trapping and restoration managed at the NavigationMenu level
+- **Click Outside**: Close events propagate from NavigationMenu to all open content
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Maintain hierarchy**: Always use the required parent-child relationships for proper functionality
+- **Limit nesting depth**: Keep menu structures shallow (2-3 levels max) for better usability
+- **Consistent styling**: Use navigationMenuTriggerStyle() for uniform trigger appearance
+- **Responsive design**: Consider mobile navigation patterns when using complex menu structures
+- **Performance optimization**: Lazy load heavy content within NavigationMenuContent when possible
+
+### Accessibility
+
+- **ARIA relationships**: Components automatically establish proper ARIA relationships between triggers and content
+- **Keyboard navigation**: Full keyboard support with Arrow keys, Enter, Escape, and Tab navigation
+- **Screen reader support**: Semantic HTML structure with proper roles and descriptions
+- **Focus management**: Automatic focus trapping and restoration within open menu content
+- **High contrast support**: Ensure sufficient color contrast for focus states and active indicators
+
+### Performance
+
+- **Lazy loading**: Use React.lazy() for heavy NavigationMenuContent when appropriate
+- **State management**: Avoid unnecessary re-renders by keeping menu state local to NavigationMenu
+- **Animation optimization**: Built-in animations use CSS transforms for optimal performance
+- **Viewport positioning**: NavigationMenuViewport automatically optimizes content positioning
+
+## Common Patterns
+
+### Pattern 1: Header Navigation
+
+```tsx
+// Primary site navigation in header
+function HeaderNavigation() {
+  return (
+    <header className="sticky top-0 z-50 border-b bg-background">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="font-bold text-xl">Brand</div>
+
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="grid gap-3 p-4 w-[500px] grid-cols-2">
+                    {/* Product links */}
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  {/* Solutions content */}
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  href="/pricing"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Pricing
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+      </div>
+    </header>
+  );
+}
+```
+
+### Pattern 2: Sidebar Navigation
+
+```tsx
+// Vertical navigation for sidebars
+function SidebarNavigation() {
+  return (
+    <NavigationMenu orientation="vertical" className="w-full">
+      <NavigationMenuList className="flex-col space-y-1 w-full">
+        <NavigationMenuItem className="w-full">
+          <NavigationMenuTrigger className="w-full justify-start">
+            Dashboard
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <div className="flex flex-col space-y-1 p-2">
+              <NavigationMenuLink href="/dashboard/overview">
+                Overview
+              </NavigationMenuLink>
+              <NavigationMenuLink href="/dashboard/analytics">
+                Analytics
+              </NavigationMenuLink>
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+```

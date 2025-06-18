@@ -1,0 +1,592 @@
+---
+
+# Tooltip Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate tooltip functionality
+
+### When to Use
+
+The Tooltip component group is designed for providing contextual information through brief, informative overlays that appear when users hover over or focus on elements. Use Tooltip when you need to:
+
+- Provide helpful hints or explanations for icons, buttons, or interface elements without cluttering the UI
+- Display additional context for truncated text, abbreviated terms, or unfamiliar concepts
+- Show keyboard shortcuts, status information, or alternative descriptions for accessibility
+- Enhance user experience with quick clarifications that don't require navigation or modals
+- Create progressive disclosure for complex interfaces where some information is secondary
+- Offer accessibility improvements by providing descriptive text for non-obvious interactive elements
+
+### Architecture
+
+**Critical Coupling**: The Tooltip components form a tightly integrated system with required compositional hierarchy and shared context. The components must work together through Radix UI's tooltip primitive system, sharing state for positioning, timing, and interaction behavior. The Tooltip component automatically wraps its children with TooltipProvider for seamless context sharing.
+
+### Component Interdependencies
+
+The Tooltip group requires a specific compositional structure:
+
+- **Tooltip (Root)**: Automatically provides TooltipProvider context and manages tooltip state
+- **TooltipTrigger**: Must be a child of Tooltip, defines the element that triggers the tooltip
+- **TooltipContent**: Must be a child of Tooltip, contains the tooltip content with automatic arrow positioning
+- **TooltipProvider**: Automatically included by Tooltip component, manages global tooltip settings and timing
+- **Portal Integration**: TooltipContent automatically renders through a portal with proper z-index layering
+
+## Components
+
+### Tooltip {Primary Component}
+
+The root component that automatically provides TooltipProvider context and manages the tooltip state for all child components.
+
+**Purpose:** Establishes the tooltip context, manages timing and positioning, and provides a simplified API by automatically including TooltipProvider functionality.
+
+**Interface:**
+
+```typescript
+interface TooltipProps
+  extends React.ComponentProps<typeof TooltipPrimitive.Root> {
+  children: React.ReactNode; // Required: TooltipTrigger and TooltipContent
+  open?: boolean; // Controlled open state
+  defaultOpen?: boolean; // Uncontrolled default open state
+  onOpenChange?: (open: boolean) => void; // Callback when open state changes
+  delayDuration?: number; // Inherited from automatic TooltipProvider (default: 0)
+  skipDelayDuration?: number; // How long to ignore delay after tooltip closes
+  disableHoverableContent?: boolean; // Whether content can be hovered
+}
+```
+
+**Dependencies:** Requires TooltipTrigger and TooltipContent as children
+**Provides:** Tooltip state management, timing controls, positioning context, and automatic TooltipProvider wrapping
+
+**Usage Example:**
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
+function Example() {
+  return (
+    <Tooltip>
+      <TooltipTrigger>Hover me</TooltipTrigger>
+      <TooltipContent>
+        <p>Helpful information appears here</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+### TooltipProvider {Context Provider}
+
+The global context provider that manages tooltip timing and behavior across the application. Automatically included within each Tooltip component.
+
+**Purpose:** Provides shared configuration for tooltip timing, delay behavior, and global tooltip settings across the application.
+
+**Interface:**
+
+```typescript
+interface TooltipProviderProps
+  extends React.ComponentProps<typeof TooltipPrimitive.Provider> {
+  children: React.ReactNode; // Tooltip components or application content
+  delayDuration?: number; // Delay before tooltip opens in milliseconds (default: 0)
+  skipDelayDuration?: number; // Time to skip delay after closing (default: 300)
+  disableHoverableContent?: boolean; // Whether tooltip content can be hovered
+}
+```
+
+**Context Dependencies:** None - this is the root provider
+**Provides:** Global tooltip timing configuration and state management
+
+**Usage Example:**
+
+```tsx
+// Automatic usage within Tooltip component (recommended)
+<Tooltip>
+  <TooltipTrigger>Button</TooltipTrigger>
+  <TooltipContent>Tooltip content</TooltipContent>
+</Tooltip>
+
+// Manual usage for custom configuration (advanced)
+<TooltipProvider delayDuration={500}>
+  <Tooltip>
+    <TooltipTrigger>Button</TooltipTrigger>
+    <TooltipContent>Tooltip content</TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+### TooltipTrigger {Dependent Component}
+
+The element that triggers the tooltip to appear when hovered or focused.
+
+**Purpose:** Defines the interactive element that users hover over or focus on to reveal the tooltip content.
+
+**Interface:**
+
+```typescript
+interface TooltipTriggerProps
+  extends React.ComponentProps<typeof TooltipPrimitive.Trigger> {
+  children: React.ReactNode; // The trigger element content
+  asChild?: boolean; // Render as child element instead of button
+}
+```
+
+**Context Dependencies:** Requires Tooltip parent for tooltip state management and timing
+**Parent Requirements:** Must be used within a Tooltip component
+
+**Usage Example:**
+
+```tsx
+// Must be used within Tooltip
+<Tooltip>
+  <TooltipTrigger asChild>
+    <button className="icon-button">
+      <QuestionMarkIcon />
+    </button>
+  </TooltipTrigger>
+  <TooltipContent>What is this feature?</TooltipContent>
+</Tooltip>
+```
+
+### TooltipContent {Dependent Component}
+
+The content that appears in the tooltip overlay with automatic arrow positioning and portal rendering.
+
+**Purpose:** Contains the tooltip content with built-in styling, positioning, animations, and an automatically positioned arrow.
+
+**Interface:**
+
+```typescript
+interface TooltipContentProps
+  extends React.ComponentProps<typeof TooltipPrimitive.Content> {
+  children: React.ReactNode; // The content to display in the tooltip
+  className?: string; // Additional CSS classes
+  sideOffset?: number; // Distance from trigger in pixels (default: 0)
+  align?: "start" | "center" | "end"; // Alignment relative to trigger
+  side?: "top" | "right" | "bottom" | "left"; // Preferred side for positioning
+  alignOffset?: number; // Offset along the alignment axis
+  avoidCollisions?: boolean; // Whether to avoid viewport collisions
+  collisionBoundary?: Element | null; // Boundary for collision detection
+  sticky?: "partial" | "always"; // Sticky behavior during scroll
+  hideWhenDetached?: boolean; // Hide when trigger is not visible
+}
+```
+
+**Context Dependencies:** Requires Tooltip parent for positioning and portal rendering
+**Parent Requirements:** Must be used within a Tooltip component
+**Built-in Features:** Automatic arrow positioning, fade and zoom animations, portal rendering
+
+**Usage Example:**
+
+```tsx
+// Must be used within Tooltip
+<Tooltip>
+  <TooltipTrigger>Hover target</TooltipTrigger>
+  <TooltipContent side="bottom" sideOffset={8} className="max-w-xs">
+    <p>This tooltip has custom positioning and styling</p>
+  </TooltipContent>
+</Tooltip>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
+// Minimal required structure
+function BasicExample() {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <button className="p-2 rounded bg-gray-100">?</button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Click for help information</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Info, Settings, Download } from "lucide-react";
+
+// Complex usage with custom positioning and multiple tooltips
+function AdvancedExample() {
+  return (
+    <div className="flex space-x-4">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button className="p-2 rounded bg-blue-500 text-white">
+            <Info className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={8}>
+          <p>View additional information</p>
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button className="p-2 rounded bg-gray-500 text-white">
+            <Settings className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="start">
+          <div className="space-y-1">
+            <p className="font-semibold">Settings</p>
+            <p className="text-sm">Configure your preferences</p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button className="p-2 rounded bg-green-500 text-white">
+            <Download className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="max-w-xs">
+          <p>Download the file to your device</p>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// Icon button with tooltip
+function IconTooltip() {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="icon-button">
+          <QuestionIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Get help with this feature</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// Truncated text with full content in tooltip
+function TruncatedText({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="truncate cursor-help">{text}</span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-sm">
+        <p>{text}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// Status indicator with explanation
+function StatusTooltip({ status }: { status: "online" | "offline" | "busy" }) {
+  const statusConfig = {
+    online: { color: "bg-green-500", text: "Online and available" },
+    offline: { color: "bg-gray-500", text: "Offline" },
+    busy: { color: "bg-red-500", text: "Busy - do not disturb" },
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={`w-3 h-3 rounded-full ${statusConfig[status].color} cursor-help`}
+        />
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{statusConfig[status].text}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// Keyboard shortcut tooltip
+function KeyboardShortcut() {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="px-4 py-2 bg-blue-500 text-white rounded">
+          Save
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="flex items-center space-x-2">
+          <span>Save document</span>
+          <kbd className="px-1 py-0.5 text-xs bg-gray-200 rounded">⌘S</kbd>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Tooltip components follow a provider-consumer pattern with automatic context management:
+
+1. **Tooltip** automatically creates TooltipProvider context and manages open/closed state
+2. **TooltipTrigger** communicates hover/focus events to the root component
+3. **TooltipContent** receives positioning and visibility state from the root
+4. **TooltipProvider** (automatic) manages global timing and delay settings
+5. All positioning calculations and portal rendering are handled automatically
+
+### Context Sharing
+
+- **Tooltip State**: Shared between trigger and content for coordinated show/hide behavior
+- **Positioning Context**: Root component provides positioning reference for content
+- **Provider Context**: Automatic TooltipProvider manages timing and global settings
+- **Portal Rendering**: Content automatically renders in a portal with proper z-index layering
+- **Arrow Positioning**: Automatically calculated and rendered based on tooltip position
+
+### Event Handling
+
+- **Mouse Events**: Hover enter/leave on trigger controls content visibility
+- **Focus Events**: Focus/blur on trigger provides keyboard accessibility
+- **Escape Key**: Automatically closes the tooltip when pressed
+- **Delay Management**: Automatic timing for opening/closing with configurable delays
+- **Outside Interaction**: Tooltip closes when interacting with other elements
+
+## Best Practices
+
+### Usage Guidelines
+
+- Keep tooltip content concise and focused - users expect quick, helpful information
+- Use tooltips for supplementary information, not critical functionality or navigation
+- Ensure triggers are clearly interactive and have appropriate visual cues
+- Position tooltips to avoid covering important interface elements or the trigger itself
+- Use consistent timing across the application - the default 0ms delay provides immediate feedback
+- Prefer simple text content over complex layouts for better accessibility
+
+### Accessibility
+
+- Tooltip components automatically provide proper ARIA relationships and attributes
+- Keyboard navigation is built-in - focus on trigger shows content, Escape closes tooltip
+- Screen readers announce tooltip content appropriately when triggered
+- Content is properly associated with triggers through ARIA attributes
+- High contrast and reduced motion preferences are respected through CSS
+- Tooltips should enhance, not replace, proper semantic markup and labels
+
+### Performance
+
+- Content is only rendered when the tooltip is open, reducing initial bundle size
+- Portal rendering prevents layout shifts and z-index conflicts
+- Event listeners are efficiently managed and automatically cleaned up
+- Positioning calculations are optimized and only run when necessary
+- Automatic TooltipProvider eliminates the need for manual context management
+
+## Common Patterns
+
+### Pattern 1: Form Field Help
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
+
+// Help tooltips for form fields
+function FormFieldHelp({ helpText }: { helpText: string }) {
+  return (
+    <div className="flex items-center space-x-2">
+      <label htmlFor="field">Field Label</label>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className="text-gray-400 hover:text-gray-600">
+            <HelpCircle className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p>{helpText}</p>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Action Button Grid
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Edit, Delete, Share, Download } from "lucide-react";
+
+// Grid of action buttons with descriptive tooltips
+function ActionButtonGrid() {
+  const actions = [
+    { icon: Edit, label: "Edit item", shortcut: "E" },
+    { icon: Delete, label: "Delete item", shortcut: "Del" },
+    { icon: Share, label: "Share with others", shortcut: "S" },
+    { icon: Download, label: "Download file", shortcut: "D" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {actions.map(({ icon: Icon, label, shortcut }) => (
+        <Tooltip key={label}>
+          <TooltipTrigger asChild>
+            <button className="p-2 rounded bg-gray-100 hover:bg-gray-200">
+              <Icon className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="flex items-center space-x-2">
+              <span>{label}</span>
+              <kbd className="px-1 py-0.5 text-xs bg-gray-200 rounded">
+                {shortcut}
+              </kbd>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
+  );
+}
+```
+
+### Pattern 3: Data Visualization Labels
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
+// Tooltips for data points in charts or metrics
+function DataPoint({
+  label,
+  value,
+  trend,
+  description,
+}: {
+  label: string;
+  value: string;
+  trend: "up" | "down" | "stable";
+  description: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="p-4 bg-white rounded-lg border cursor-help">
+          <div className="text-sm text-gray-600">{label}</div>
+          <div className="text-2xl font-bold">{value}</div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-sm">
+        <div className="space-y-2">
+          <p className="font-semibold">{label}</p>
+          <p className="text-sm">{description}</p>
+          <div className="text-xs text-gray-500">
+            Trend: {trend === "up" ? "📈" : trend === "down" ? "📉" : "➡️"}{" "}
+            {trend}
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+### Pattern 4: Navigation Help
+
+```tsx
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
+// Navigation items with explanatory tooltips
+function NavigationItem({
+  href,
+  icon: Icon,
+  label,
+  description,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <a
+          href={href}
+          className="flex items-center p-2 rounded hover:bg-gray-100"
+        >
+          <Icon className="w-5 h-5 mr-3" />
+          <span className="hidden md:block">{label}</span>
+        </a>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="md:hidden">
+        <div className="space-y-1">
+          <p className="font-semibold">{label}</p>
+          <p className="text-sm">{description}</p>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+## Technical Features
+
+### Automatic Enhancements
+
+- **Built-in Provider**: Each Tooltip automatically includes TooltipProvider functionality
+- **Arrow Positioning**: Automatically positioned arrow that follows tooltip placement
+- **Portal Rendering**: Content renders in a portal for proper layering without z-index issues
+- **Collision Detection**: Automatic repositioning when tooltips would extend outside viewport
+- **Animation System**: Built-in fade and zoom animations with data-state attributes
+
+### Styling Capabilities
+
+- **CSS Custom Properties**: Uses CSS variables for consistent theming integration
+- **Responsive Design**: Adapts positioning and sizing for different screen sizes
+- **Animation Control**: Respects `prefers-reduced-motion` for accessibility
+- **Custom Styling**: Easy to override with className prop and CSS utility classes
+- **Theme Integration**: Automatically uses design system colors and spacing
+
+### Advanced Configuration
+
+- **Timing Control**: Configurable delays for opening and closing behavior
+- **Positioning Options**: Comprehensive positioning with collision avoidance
+- **Content Flexibility**: Supports any React content including images and interactive elements
+- **Keyboard Navigation**: Full keyboard accessibility with focus management
+- **Multiple Tooltips**: Efficient handling of multiple tooltips with shared context

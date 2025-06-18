@@ -2,6 +2,17 @@
 
 import { MusicGenreSection } from "@/components/music/MusicGenreSection";
 import { Track } from "@/components/music/TrackCard";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Grape } from "lucide-react";
 
 // Track data
 const generateTracks = (genre: string): Track[] => {
@@ -128,6 +139,115 @@ export default function Home() {
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 font-[family-name:var(--font-molle)] text-white drop-shadow-md">
           House Music
         </h1>
+
+        {/* Select Component */}
+        <div className="flex justify-center mb-4">
+          <div className="w-52">
+            <Select defaultValue="grapes">
+              <SelectTrigger className="h-10 px-3 py-2 bg-white border border-slate-300 rounded-md text-sm text-slate-900 font-normal shadow-sm">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent className="w-52 bg-white border border-slate-100 rounded-md shadow-lg">
+                <SelectGroup>
+                  <SelectLabel className="px-8 py-1.5 text-sm font-medium text-slate-900">
+                    Fruits
+                  </SelectLabel>
+                  <SelectItem
+                    value="apple"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Apple
+                  </SelectItem>
+                  <SelectItem
+                    value="banana"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Banana
+                  </SelectItem>
+                  <SelectItem
+                    value="blueberry"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Blueberry
+                  </SelectItem>
+                  <SelectItem
+                    value="grapes"
+                    className="px-2 py-1.5 text-sm text-slate-600 bg-slate-100 rounded-md flex items-center gap-2"
+                  >
+                    <Grape className="w-4 h-4" />
+                    <span>Grapes</span>
+                  </SelectItem>
+                  <SelectItem
+                    value="pineapple"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Pineapple
+                  </SelectItem>
+                </SelectGroup>
+
+                <SelectSeparator className="my-1 bg-slate-100" />
+
+                <SelectGroup>
+                  <SelectLabel className="px-8 py-1.5 text-sm font-medium text-slate-900">
+                    Vegetables
+                  </SelectLabel>
+                  <SelectItem
+                    value="aubergine"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Auberigine
+                  </SelectItem>
+                  <SelectItem
+                    value="broccoli"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Broccoli
+                  </SelectItem>
+                  <SelectItem
+                    value="carrot"
+                    disabled
+                    className="px-8 py-1.5 text-sm text-slate-600 opacity-50"
+                  >
+                    Carrot
+                  </SelectItem>
+                  <SelectItem
+                    value="leek"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Leek
+                  </SelectItem>
+                </SelectGroup>
+
+                <SelectSeparator className="my-1 bg-slate-100" />
+
+                <SelectGroup>
+                  <SelectLabel className="px-8 py-1.5 text-sm font-medium text-slate-900">
+                    Meat
+                  </SelectLabel>
+                  <SelectItem
+                    value="beef"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Beef
+                  </SelectItem>
+                  <SelectItem
+                    value="chicken"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Chicken
+                  </SelectItem>
+                  <SelectItem
+                    value="lamb"
+                    className="px-8 py-1.5 text-sm text-slate-600"
+                  >
+                    Lamb
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <p className="text-lg max-w-2xl mx-auto text-white/90">
           Explore the finest selection of house music tracks across different
           subgenres

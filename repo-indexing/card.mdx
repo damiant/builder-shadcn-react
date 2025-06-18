@@ -1,0 +1,496 @@
+# Card Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate card components with structured layout parts
+
+### When to Use
+
+Card components are ideal for displaying structured content in a visually cohesive container. Use cards when you need to:
+
+- Present related information in a contained, scannable format
+- Group content with clear visual boundaries
+- Create content previews or summaries
+- Display media with accompanying text content
+- Build product listings, user profiles, or content feeds
+- Organize complex layouts into digestible sections
+
+### Architecture
+
+**Moderate Coupling**: The Card component group follows a compositional pattern where components are designed to work together but can be mixed and matched based on content needs. While the root Card component provides the container, the inner components (CardHeader, CardContent, CardFooter, etc.) are optional and can be combined in various ways.
+
+### Component Interdependencies
+
+The Card component group uses a flexible composition pattern:
+
+- **Card** serves as the root container that provides styling context
+- **Layout components** (CardHeader, CardContent, CardFooter) define content areas within the card
+- **Content components** (CardTitle, CardDescription, CardAction) provide semantic meaning and styling
+- Components use CSS Grid and data slots for intelligent layout behavior
+- No shared React context - components communicate through CSS layout and data attributes
+
+## Components
+
+### Card {Primary Component}
+
+The foundational container component that provides the base styling and structure for all card content.
+
+**Purpose:** Creates a styled container with consistent borders, shadows, and spacing that serves as the foundation for card content.
+
+**Interface:**
+
+```typescript
+interface CardProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Provides:** Base card styling, rounded corners, borders, shadow, and background color context
+
+**Usage Example:**
+
+```tsx
+import { Card } from "@/components/ui/card";
+
+function BasicCard() {
+  return (
+    <Card>
+      <p>Basic card content</p>
+    </Card>
+  );
+}
+```
+
+### CardHeader
+
+Provides a structured header area typically used for titles, descriptions, and actions.
+
+**Purpose:** Creates a header section with intelligent grid layout that automatically accommodates titles, descriptions, and action elements.
+
+**Interface:**
+
+```typescript
+interface CardHeaderProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Layout Behavior:** Uses CSS Grid with `grid-cols-[1fr_auto]` when CardAction is present, allowing automatic positioning of action elements.
+
+**Usage Example:**
+
+```tsx
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+
+function CardWithHeader() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+        <CardDescription>Card description text</CardDescription>
+      </CardHeader>
+    </Card>
+  );
+}
+```
+
+### CardTitle
+
+Semantic component for card titles with consistent typography.
+
+**Purpose:** Provides semantic meaning and consistent styling for card headings.
+
+**Interface:**
+
+```typescript
+interface CardTitleProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<CardTitle>Track Name</CardTitle>
+```
+
+### CardDescription
+
+Semantic component for card descriptions with muted styling.
+
+**Purpose:** Provides styling for secondary text content like descriptions or metadata.
+
+**Interface:**
+
+```typescript
+interface CardDescriptionProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<CardDescription>Artist information or track details</CardDescription>
+```
+
+### CardAction
+
+Positioned component for action elements like buttons or menus.
+
+**Purpose:** Provides intelligent positioning for interactive elements within the card header area.
+
+**Interface:**
+
+```typescript
+interface CardActionProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Layout Behavior:** Automatically positions itself in the top-right when used within CardHeader, spanning the full header height.
+
+**Usage Example:**
+
+```tsx
+import { CardAction } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+<CardHeader>
+  <CardTitle>Card Title</CardTitle>
+  <CardDescription>Description</CardDescription>
+  <CardAction>
+    <Button size="sm">Action</Button>
+  </CardAction>
+</CardHeader>;
+```
+
+### CardContent
+
+Main content area component with consistent padding.
+
+**Purpose:** Provides a consistently padded area for the primary card content.
+
+**Interface:**
+
+```typescript
+interface CardContentProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Usage Example:**
+
+```tsx
+import { CardContent } from "@/components/ui/card";
+
+<CardContent>
+  <p>Main card content goes here</p>
+</CardContent>;
+```
+
+### CardFooter
+
+Footer component for actions or additional information.
+
+**Purpose:** Creates a footer area typically used for actions, metadata, or supplementary information.
+
+**Interface:**
+
+```typescript
+interface CardFooterProps extends React.ComponentProps<"div"> {
+  className?: string;
+  children: React.ReactNode;
+}
+```
+
+**Layout Behavior:** Uses flexbox layout for easy alignment of footer content and actions.
+
+**Usage Example:**
+
+```tsx
+import { CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+<CardFooter>
+  <Button variant="outline">Cancel</Button>
+  <Button>Save</Button>
+</CardFooter>;
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Card, CardContent } from "@/components/ui/card";
+
+// Minimal card structure
+function BasicCard() {
+  return (
+    <Card>
+      <CardContent>
+        <p>Simple card content</p>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Full Structure
+
+```tsx
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// Complete card with all sections
+function CompleteCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Product Name</CardTitle>
+        <CardDescription>Product description and details</CardDescription>
+        <CardAction>
+          <Button size="sm" variant="outline">
+            Menu
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <p>Main product information and features</p>
+      </CardContent>
+      <CardFooter>
+        <Button variant="outline">Add to Cart</Button>
+        <Button>Buy Now</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+### Common Variations
+
+#### Media Card (Real example from codebase)
+
+```tsx
+import Image from "next/image";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+
+function TrackCard({ track }) {
+  return (
+    <Card className="w-full h-64 flex flex-col hover:shadow-lg transition-shadow">
+      <div className="relative h-[192px] w-full overflow-hidden rounded-t-xl bg-muted/30">
+        <Image
+          src={track.imageUrl}
+          alt={`Cover art for ${track.title}`}
+          className="object-cover rounded-t-xl"
+          fill
+        />
+      </div>
+      <CardContent className="p-3 flex-grow h-[64px] flex flex-col justify-between">
+        <div className="overflow-hidden">
+          <CardTitle className="text-sm font-semibold mb-0.5 truncate">
+            {track.title}
+          </CardTitle>
+          <p className="text-xs text-muted-foreground truncate">
+            {track.artist}
+          </p>
+        </div>
+        {track.label && (
+          <div className="mt-auto">
+            <p className="text-xs text-muted-foreground truncate">
+              {track.label} {track.releaseDate && `· ${track.releaseDate}`}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+#### Action Card
+
+```tsx
+function ActionCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Settings</CardTitle>
+        <CardDescription>Manage your account preferences</CardDescription>
+        <CardAction>
+          <Button size="sm" variant="ghost">
+            ⋯
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <p>Configure your notification preferences</p>
+          <p>Update profile information</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+#### Simple Content Card
+
+```tsx
+function ContentCard() {
+  return (
+    <Card>
+      <CardContent>
+        <h3 className="font-semibold mb-2">Quick Stats</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-2xl font-bold">1,234</p>
+            <p className="text-sm text-muted-foreground">Total Users</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">56</p>
+            <p className="text-sm text-muted-foreground">Active Sessions</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+Cards follow a simple containment model where:
+
+- The Card component provides the visual container and base styling
+- Child components inherit styling context through CSS custom properties
+- No React context or prop drilling is used - components are self-contained
+
+### Layout Intelligence
+
+The card components use CSS Grid and data attributes for intelligent layout:
+
+- CardHeader automatically creates a two-column grid when CardAction is present
+- Components use `data-slot` attributes for CSS selector targeting
+- Border classes (`border-b`, `border-t`) automatically adjust padding when present
+
+### Event Handling
+
+Cards don't manage internal state or events. Event handling is delegated to:
+
+- Individual action components (buttons, links) within the card
+- Parent components that contain the card
+- Custom event handlers passed to card content
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Use semantic structure**: Include CardHeader for titles and descriptions, CardContent for main content, and CardFooter for actions
+- **Leverage layout intelligence**: Place CardAction within CardHeader to automatically get proper grid positioning
+- **Maintain consistent spacing**: Use the built-in padding from CardContent and CardFooter rather than custom spacing
+- **Consider content hierarchy**: Use CardTitle and CardDescription for semantic meaning and consistent typography
+
+### Accessibility
+
+- Cards automatically provide proper semantic structure when using the provided components
+- Use CardTitle for headings to maintain proper heading hierarchy
+- Ensure interactive elements within cards have proper focus indicators
+- Consider ARIA labels for complex card content or when cards are interactive as a whole
+
+### Performance
+
+- Cards are lightweight and don't introduce React context overhead
+- Use appropriate image optimization when including media in cards
+- Consider virtualization for large lists of cards
+- Leverage CSS containment by avoiding complex nested layouts within cards
+
+## Common Patterns
+
+### Pattern 1: Product/Content Display
+
+```tsx
+// Ideal for e-commerce, content feeds, or media galleries
+function ProductCard({ product }) {
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <div className="aspect-square relative">
+        <Image src={product.image} alt={product.name} fill />
+      </div>
+      <CardContent>
+        <CardTitle className="line-clamp-2">{product.name}</CardTitle>
+        <p className="text-lg font-semibold">${product.price}</p>
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full">Add to Cart</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+### Pattern 2: Dashboard Widget
+
+```tsx
+// Perfect for analytics, admin panels, or status displays
+function MetricCard({ title, value, change, description }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardAction>
+          <Badge variant={change > 0 ? "default" : "destructive"}>
+            {change > 0 ? "+" : ""}
+            {change}%
+          </Badge>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <CardDescription>{description}</CardDescription>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Pattern 3: Form Section
+
+```tsx
+// Excellent for organizing form sections or settings groups
+function SettingsCard({ title, description, children }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+```

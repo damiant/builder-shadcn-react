@@ -1,0 +1,525 @@
+# ToggleGroup Components
+
+## Overview
+
+### Purpose
+
+Use this component group to generate toggle group functionality with required context sharing
+
+### When to Use
+
+ToggleGroup components are ideal for scenarios where users need to select one or multiple options from a related set of toggle buttons that work together as a cohesive unit. Use ToggleGroup when:
+
+- **Multi-Select Controls**: Creating toolbar buttons where multiple options can be active simultaneously (text formatting: bold, italic, underline)
+- **Single-Select Controls**: Radio-button-like behavior where only one option can be active at a time (text alignment: left, center, right)
+- **Filter Controls**: Selecting multiple filter criteria that work together (view modes, sorting options)
+- **Settings Panels**: Grouping related toggle switches that benefit from consistent styling and behavior
+- **Toolbar Creation**: Building editor toolbars, formatting controls, or action button groups
+- **Tab-like Navigation**: Alternative to tabs where multiple sections can be active simultaneously
+
+### Architecture
+
+**Critical/Strong Coupling**: The ToggleGroup components have a required parent-child relationship where ToggleGroupItem components must be descendants of a ToggleGroup component. The architecture follows a shared context pattern where ToggleGroup provides styling variants and coordination, while ToggleGroupItem inherits these properties for consistent appearance.
+
+### Component Interdependencies
+
+- **Required Parent-Child Relationship**: ToggleGroupItem must be used within ToggleGroup for proper styling inheritance
+- **Shared Context Dependencies**: ToggleGroup provides variant and size context that ToggleGroupItem consumes
+- **Style Coordination**: ToggleGroup ensures all child items have consistent visual styling and behavior
+- **Layout Management**: ToggleGroup handles the overall group layout, spacing, and visual grouping of toggle items
+
+## Components
+
+### ToggleGroup {Primary Component}
+
+The root container component that provides styling context and coordinates the visual grouping of toggle items.
+
+**Purpose:** Establishes the toggle group context, manages consistent styling across all child toggle items, and provides the overall group layout and visual structure.
+
+**Interface:**
+
+```typescript
+interface ToggleGroupProps
+  extends React.ComponentProps<typeof ToggleGroupPrimitive.Root>,
+    VariantProps<typeof toggleVariants> {
+  className?: string;
+  variant?: "default" | "outline"; // Visual style variant inherited by all children
+  size?: "default" | "sm" | "lg"; // Size variant inherited by all children
+  children: React.ReactNode; // Required ToggleGroupItem components
+  type?: "single" | "multiple"; // Selection mode - single or multiple selection
+  value?: string | string[]; // Currently selected value(s)
+  defaultValue?: string | string[]; // Initial selected value(s) for uncontrolled usage
+  onValueChange?: (value: string | string[]) => void; // Callback when selection changes
+  disabled?: boolean; // Disables the entire toggle group
+  orientation?: "horizontal" | "vertical"; // Layout orientation
+  dir?: "ltr" | "rtl"; // Text direction
+  loop?: boolean; // Whether arrow key navigation wraps around
+}
+```
+
+**Dependencies:** None - this is the root component
+**Provides:** Styling context (variant, size), layout coordination, selection state management
+
+**Usage Example:**
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+function TextFormatToolbar() {
+  const [formatting, setFormatting] = useState<string[]>([]);
+
+  return (
+    <ToggleGroup
+      type="multiple"
+      variant="outline"
+      size="sm"
+      value={formatting}
+      onValueChange={setFormatting}
+    >
+      <ToggleGroupItem value="bold">B</ToggleGroupItem>
+      <ToggleGroupItem value="italic">I</ToggleGroupItem>
+      <ToggleGroupItem value="underline">U</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+```
+
+### ToggleGroupItem {Dependent Component}
+
+Individual toggle button items that must be used within a ToggleGroup context to inherit proper styling and behavior.
+
+**Purpose:** Represents a single toggleable option within the group, inheriting styling variants from the parent ToggleGroup and handling user interactions.
+
+**Interface:**
+
+```typescript
+interface ToggleGroupItemProps
+  extends React.ComponentProps<typeof ToggleGroupPrimitive.Item>,
+    VariantProps<typeof toggleVariants> {
+  className?: string;
+  children: React.ReactNode; // Content of the toggle item (text, icons, etc.)
+  value: string; // Required - unique value for this toggle item
+  variant?: "default" | "outline"; // Optional override of parent variant
+  size?: "default" | "sm" | "lg"; // Optional override of parent size
+  disabled?: boolean; // Disables this specific item
+  pressed?: boolean; // Controlled pressed state
+  defaultPressed?: boolean; // Initial pressed state for uncontrolled usage
+  onPressedChange?: (pressed: boolean) => void; // Callback when pressed state changes
+}
+```
+
+**Context Dependencies:**
+
+- Must be used within ToggleGroup component for proper styling inheritance
+- Inherits variant and size from ToggleGroupContext
+- Receives coordinated styling for group visual cohesion
+
+**Parent Requirements:** Must be a descendant of ToggleGroup component for proper styling and layout
+
+**Usage Example:**
+
+```tsx
+// Must be used within ToggleGroup
+<ToggleGroup type="single" variant="outline">
+  <ToggleGroupItem value="left">
+    <AlignLeft className="h-4 w-4" />
+  </ToggleGroupItem>
+  <ToggleGroupItem value="center">
+    <AlignCenter className="h-4 w-4" />
+  </ToggleGroupItem>
+  <ToggleGroupItem value="right">
+    <AlignRight className="h-4 w-4" />
+  </ToggleGroupItem>
+</ToggleGroup>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+// Minimal required structure - single selection
+function BasicToggleExample() {
+  return (
+    <ToggleGroup type="single" defaultValue="center">
+      <ToggleGroupItem value="left">Left</ToggleGroupItem>
+      <ToggleGroupItem value="center">Center</ToggleGroupItem>
+      <ToggleGroupItem value="right">Right</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+
+// Multiple selection
+function MultiSelectToggleExample() {
+  return (
+    <ToggleGroup type="multiple" defaultValue={["bold", "italic"]}>
+      <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
+      <ToggleGroupItem value="italic">Italic</ToggleGroupItem>
+      <ToggleGroupItem value="underline">Underline</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+// Controlled usage with custom styling and icons
+function AdvancedToggleExample() {
+  const [alignment, setAlignment] = useState<string>("left");
+  const [formatting, setFormatting] = useState<string[]>([]);
+
+  return (
+    <div className="space-y-4">
+      {/* Text Alignment - Single Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Text Alignment</label>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={alignment}
+          onValueChange={(value) => setAlignment(value as string)}
+        >
+          <ToggleGroupItem value="left" aria-label="Align left">
+            <AlignLeft className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="center" aria-label="Align center">
+            <AlignCenter className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right" aria-label="Align right">
+            <AlignRight className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="justify" aria-label="Justify">
+            <AlignJustify className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Text Formatting - Multiple Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Text Formatting</label>
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          size="sm"
+          value={formatting}
+          onValueChange={setFormatting}
+        >
+          <ToggleGroupItem value="bold" aria-label="Bold">
+            <Bold className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="italic" aria-label="Italic">
+            <Italic className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="underline" aria-label="Underline">
+            <Underline className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="strikethrough" aria-label="Strikethrough">
+            <Strikethrough className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
+  );
+}
+```
+
+### Common Variations
+
+```tsx
+// Different sizes and variants
+function ToggleGroupVariations() {
+  return (
+    <div className="space-y-4">
+      {/* Small Size */}
+      <ToggleGroup type="single" size="sm" variant="outline">
+        <ToggleGroupItem value="1">1</ToggleGroupItem>
+        <ToggleGroupItem value="2">2</ToggleGroupItem>
+        <ToggleGroupItem value="3">3</ToggleGroupItem>
+      </ToggleGroup>
+
+      {/* Default Size */}
+      <ToggleGroup type="single" variant="default">
+        <ToggleGroupItem value="option1">Option 1</ToggleGroupItem>
+        <ToggleGroupItem value="option2">Option 2</ToggleGroupItem>
+        <ToggleGroupItem value="option3">Option 3</ToggleGroupItem>
+      </ToggleGroup>
+
+      {/* Large Size */}
+      <ToggleGroup type="multiple" size="lg" variant="outline">
+        <ToggleGroupItem value="feature1">Feature 1</ToggleGroupItem>
+        <ToggleGroupItem value="feature2">Feature 2</ToggleGroupItem>
+        <ToggleGroupItem value="feature3">Feature 3</ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+}
+
+// Disabled states
+function DisabledToggleGroup() {
+  return (
+    <div className="space-y-4">
+      {/* Entire group disabled */}
+      <ToggleGroup type="single" disabled defaultValue="option1">
+        <ToggleGroupItem value="option1">Option 1</ToggleGroupItem>
+        <ToggleGroupItem value="option2">Option 2</ToggleGroupItem>
+        <ToggleGroupItem value="option3">Option 3</ToggleGroupItem>
+      </ToggleGroup>
+
+      {/* Individual item disabled */}
+      <ToggleGroup type="multiple">
+        <ToggleGroupItem value="available">Available</ToggleGroupItem>
+        <ToggleGroupItem value="disabled" disabled>
+          Disabled
+        </ToggleGroupItem>
+        <ToggleGroupItem value="available2">Available</ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+}
+
+// Vertical orientation
+function VerticalToggleGroup() {
+  return (
+    <ToggleGroup
+      type="single"
+      orientation="vertical"
+      className="flex-col items-start"
+    >
+      <ToggleGroupItem value="top">Top</ToggleGroupItem>
+      <ToggleGroupItem value="middle">Middle</ToggleGroupItem>
+      <ToggleGroupItem value="bottom">Bottom</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+1. **Context Provision**: ToggleGroup creates a context with variant and size values
+2. **Context Consumption**: ToggleGroupItem components access this context to inherit styling
+3. **User Interaction**: User clicks on a ToggleGroupItem
+4. **State Update**: ToggleGroupItem updates its pressed state and notifies parent via onValueChange
+5. **Selection Coordination**: ToggleGroup manages selection state based on type (single/multiple)
+6. **Visual Update**: All ToggleGroupItems re-render with updated selection and styling state
+
+### Context Sharing
+
+- **Styling Context**: ToggleGroup provides variant and size through ToggleGroupContext
+- **Visual Coordination**: All ToggleGroupItems inherit consistent styling from the parent context
+- **Layout Management**: ToggleGroup handles spacing, borders, and visual grouping of items
+- **Override Capability**: Individual ToggleGroupItems can override inherited variant/size if needed
+
+### Event Handling
+
+- **Press Events**: ToggleGroupItem handles click/press events and manages its pressed state
+- **Selection Changes**: ToggleGroup coordinates selection changes based on single/multiple mode
+- **Keyboard Navigation**: Arrow keys navigate between items, Space/Enter toggle selection
+- **Focus Management**: Focus moves between ToggleGroupItems following accessibility guidelines
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Group Related Actions**: Only group logically related toggle options that work together conceptually
+- **Use Appropriate Selection Mode**: Choose "single" for mutually exclusive options, "multiple" for independent toggles
+- **Provide Clear Visual Feedback**: Ensure pressed/active states are clearly distinguishable from inactive states
+- **Consider Icon Labels**: Use aria-label for icon-only toggle items to ensure accessibility
+- **Maintain Consistent Sizing**: Let ToggleGroup manage sizing for visual consistency across all items
+
+### Accessibility
+
+- **Keyboard Navigation**: Arrow keys navigate between items, Space/Enter activates toggles
+- **Screen Reader Support**: Proper ARIA roles and states announce toggle group functionality and selection state
+- **Focus Management**: Clear focus indicators and logical tab order through toggle items
+- **Label Association**: Use aria-label or aria-labelledby for toggle items, especially icon-only items
+- **State Announcement**: Screen readers announce when toggle states change
+
+### Performance
+
+- **Context Optimization**: ToggleGroupContext is optimized to prevent unnecessary re-renders when only selection state changes
+- **Controlled vs Uncontrolled**: Use uncontrolled (defaultValue) for simple toggles, controlled (value/onValueChange) for complex state management
+- **Minimal Prop Override**: Avoid unnecessary variant/size overrides on individual items to maintain context efficiency
+
+## Common Patterns
+
+### Pattern 1: Editor Toolbar
+
+```tsx
+// Rich text editor toolbar with multiple toggle groups
+function EditorToolbar() {
+  const [formatting, setFormatting] = useState<string[]>([]);
+  const [alignment, setAlignment] = useState<string>("left");
+  const [listType, setListType] = useState<string>("");
+
+  return (
+    <div className="flex items-center space-x-4 p-2 border rounded-lg">
+      {/* Text Formatting */}
+      <ToggleGroup
+        type="multiple"
+        variant="outline"
+        size="sm"
+        value={formatting}
+        onValueChange={setFormatting}
+      >
+        <ToggleGroupItem value="bold" aria-label="Bold">
+          <Bold className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="italic" aria-label="Italic">
+          <Italic className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="underline" aria-label="Underline">
+          <Underline className="h-4 w-4" />
+        </ToggleGroupItem>
+      </ToggleGroup>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      {/* Text Alignment */}
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        value={alignment}
+        onValueChange={(value) => setAlignment(value as string)}
+      >
+        <ToggleGroupItem value="left" aria-label="Align left">
+          <AlignLeft className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="center" aria-label="Align center">
+          <AlignCenter className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="right" aria-label="Align right">
+          <AlignRight className="h-4 w-4" />
+        </ToggleGroupItem>
+      </ToggleGroup>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      {/* List Types */}
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        value={listType}
+        onValueChange={(value) => setListType(value as string)}
+      >
+        <ToggleGroupItem value="bullet" aria-label="Bullet list">
+          <List className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="numbered" aria-label="Numbered list">
+          <ListOrdered className="h-4 w-4" />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Filter Controls
+
+```tsx
+// Multi-select filter controls for data views
+function FilterControls() {
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<string>("grid");
+
+  return (
+    <div className="flex items-center justify-between p-4">
+      {/* Status Filters */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Filter by Status</label>
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          value={activeFilters}
+          onValueChange={setActiveFilters}
+        >
+          <ToggleGroupItem value="active">Active</ToggleGroupItem>
+          <ToggleGroupItem value="pending">Pending</ToggleGroupItem>
+          <ToggleGroupItem value="completed">Completed</ToggleGroupItem>
+          <ToggleGroupItem value="archived">Archived</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* View Mode */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">View Mode</label>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={viewMode}
+          onValueChange={(value) => setViewMode(value as string)}
+        >
+          <ToggleGroupItem value="grid" aria-label="Grid view">
+            <Grid className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="list" aria-label="List view">
+            <List className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="card" aria-label="Card view">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 3: Settings Panel
+
+```tsx
+// Settings panel with grouped toggle controls
+function NotificationSettings() {
+  const [emailSettings, setEmailSettings] = useState<string[]>(["updates"]);
+  const [frequency, setFrequency] = useState<string>("daily");
+
+  return (
+    <div className="space-y-6 p-4">
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Email Notifications</h3>
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          value={emailSettings}
+          onValueChange={setEmailSettings}
+          className="flex-col items-start"
+        >
+          <ToggleGroupItem value="updates" className="w-full justify-start">
+            Product Updates
+          </ToggleGroupItem>
+          <ToggleGroupItem value="security" className="w-full justify-start">
+            Security Alerts
+          </ToggleGroupItem>
+          <ToggleGroupItem value="marketing" className="w-full justify-start">
+            Marketing Communications
+          </ToggleGroupItem>
+          <ToggleGroupItem value="newsletter" className="w-full justify-start">
+            Weekly Newsletter
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Notification Frequency</h3>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={frequency}
+          onValueChange={(value) => setFrequency(value as string)}
+        >
+          <ToggleGroupItem value="realtime">Real-time</ToggleGroupItem>
+          <ToggleGroupItem value="daily">Daily</ToggleGroupItem>
+          <ToggleGroupItem value="weekly">Weekly</ToggleGroupItem>
+          <ToggleGroupItem value="never">Never</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
+  );
+}
+```

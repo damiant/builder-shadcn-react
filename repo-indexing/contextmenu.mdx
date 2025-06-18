@@ -1,0 +1,834 @@
+# ContextMenu Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate context menu functionality
+
+### When to Use
+
+The ContextMenu component group provides right-click context menu functionality for enhanced user interactions. Use context menus when you need to:
+
+- Provide quick access to relevant actions for specific elements or content areas
+- Offer contextual commands that apply to the clicked item without cluttering the main interface
+- Create right-click menus for file managers, text editors, or data grids
+- Implement keyboard shortcuts display alongside menu items
+- Group related actions in a hierarchical menu structure with submenus
+- Provide different action sets based on user permissions or item states
+- Create accessible dropdown menus triggered by right-click or long-press
+- Implement native-like context menu experiences in web applications
+
+### Architecture
+
+**Strong Coupling**: The ContextMenu component group requires a hierarchical compositional structure where components work together to create a cohesive context menu experience. The components share context for menu state management, positioning, and keyboard navigation.
+
+### Component Interdependencies
+
+The ContextMenu component group follows a strict composition pattern:
+
+- **ContextMenu**: Root provider that manages global menu state and context
+- **ContextMenuTrigger**: Required trigger element that activates the context menu
+- **ContextMenuContent**: Portal-rendered content container that displays the menu items
+- **Menu Items**: Various item types (ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioItem) that provide interactive options
+- **Structural Components**: ContextMenuGroup, ContextMenuSeparator, ContextMenuLabel for organization
+- **Submenu Components**: ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent for nested menus
+- **Utility Components**: ContextMenuShortcut for keyboard shortcut display
+
+## Components
+
+### ContextMenu {Primary Component}
+
+The root component that provides context menu functionality and state management.
+
+**Purpose:** Serves as the foundation provider for all context menu functionality, managing the open/close state, positioning logic, and keyboard navigation context.
+
+**Interface:**
+
+```typescript
+interface ContextMenuProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Root> {
+  children: React.ReactNode; // Must contain ContextMenuTrigger and ContextMenuContent
+  onOpenChange?: (open: boolean) => void;
+  modal?: boolean;
+}
+```
+
+**Dependencies:** None - this is the root component
+**Provides:** Context menu state, positioning context, and event handling to all child components
+
+**Usage Example:**
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@/components/ui/context-menu";
+
+function BasicContextMenu() {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>Right-click me</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Edit</ContextMenuItem>
+        <ContextMenuItem>Delete</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+### ContextMenuTrigger {Required Trigger Component}
+
+The element that activates the context menu when right-clicked or long-pressed.
+
+**Purpose:** Defines the interactive area that will show the context menu when the appropriate gesture is performed.
+
+**Interface:**
+
+```typescript
+interface ContextMenuTriggerProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Trigger> {
+  children: React.ReactNode; // Content that will receive context menu
+  asChild?: boolean;
+  disabled?: boolean;
+}
+```
+
+**Context Dependencies:** Must be used within ContextMenu
+**Parent Requirements:** Must be a direct child of ContextMenu
+
+**Usage Example:**
+
+```tsx
+// Must be used within ContextMenu
+<ContextMenu>
+  <ContextMenuTrigger className="border rounded p-4">
+    <p>Right-click this content area</p>
+    <img src="example.jpg" alt="Example" />
+  </ContextMenuTrigger>
+  <ContextMenuContent>{/* menu items */}</ContextMenuContent>
+</ContextMenu>
+```
+
+### ContextMenuContent {Content Container}
+
+The portal-rendered container that displays the context menu items and handles positioning.
+
+**Purpose:** Provides the visual container for all menu items with proper positioning, animations, and portal rendering outside the normal DOM flow.
+
+**Interface:**
+
+```typescript
+interface ContextMenuContentProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Content> {
+  children: React.ReactNode; // Menu items and structural components
+  className?: string;
+  align?: "start" | "center" | "end";
+  side?: "top" | "right" | "bottom" | "left";
+  sideOffset?: number;
+  alignOffset?: number;
+}
+```
+
+**Context Dependencies:** Requires ContextMenu state and positioning context
+**Parent Requirements:** Must be a direct child of ContextMenu
+
+**Usage Example:**
+
+```tsx
+<ContextMenu>
+  <ContextMenuTrigger>Trigger content</ContextMenuTrigger>
+  <ContextMenuContent className="w-64">
+    <ContextMenuItem>Copy</ContextMenuItem>
+    <ContextMenuItem>Paste</ContextMenuItem>
+    <ContextMenuSeparator />
+    <ContextMenuItem>Delete</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
+
+### ContextMenuItem {Action Item}
+
+Interactive menu item that executes actions when clicked.
+
+**Purpose:** Provides clickable menu options with consistent styling and interaction patterns.
+
+**Interface:**
+
+```typescript
+interface ContextMenuItemProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Item> {
+  children: React.ReactNode;
+  className?: string;
+  inset?: boolean; // Adds left padding for alignment with checkbox/radio items
+  variant?: "default" | "destructive";
+  disabled?: boolean;
+  onSelect?: (event: Event) => void;
+}
+```
+
+**Context Dependencies:** Requires ContextMenu navigation context
+**Parent Requirements:** Must be used within ContextMenuContent
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuItem onSelect={() => handleCopy()}>
+    <Copy />
+    Copy
+    <ContextMenuShortcut>⌘C</ContextMenuShortcut>
+  </ContextMenuItem>
+  <ContextMenuItem variant="destructive" onSelect={() => handleDelete()}>
+    <Trash />
+    Delete
+    <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
+  </ContextMenuItem>
+</ContextMenuContent>
+```
+
+### ContextMenuCheckboxItem {Checkbox Item}
+
+Menu item with checkbox state for toggleable options.
+
+**Purpose:** Provides menu items with checkable state for boolean preferences or feature toggles.
+
+**Interface:**
+
+```typescript
+interface ContextMenuCheckboxItemProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.CheckboxItem> {
+  children: React.ReactNode;
+  className?: string;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+}
+```
+
+**Context Dependencies:** Requires ContextMenu navigation context
+**Parent Requirements:** Must be used within ContextMenuContent
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuCheckboxItem checked={showHidden} onCheckedChange={setShowHidden}>
+    Show Hidden Files
+  </ContextMenuCheckboxItem>
+  <ContextMenuCheckboxItem checked={sortByDate} onCheckedChange={setSortByDate}>
+    Sort by Date
+  </ContextMenuCheckboxItem>
+</ContextMenuContent>
+```
+
+### ContextMenuRadioItem {Radio Item}
+
+Menu item with radio button behavior for single-selection groups.
+
+**Purpose:** Provides mutually exclusive selection within radio groups for single-choice options.
+
+**Interface:**
+
+```typescript
+interface ContextMenuRadioItemProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.RadioItem> {
+  children: React.ReactNode;
+  className?: string;
+  value: string;
+  disabled?: boolean;
+}
+```
+
+**Context Dependencies:** Requires ContextMenuRadioGroup and ContextMenu navigation context
+**Parent Requirements:** Must be used within ContextMenuRadioGroup
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuRadioGroup value={sortOrder} onValueChange={setSortOrder}>
+    <ContextMenuRadioItem value="name">Sort by Name</ContextMenuRadioItem>
+    <ContextMenuRadioItem value="date">Sort by Date</ContextMenuRadioItem>
+    <ContextMenuRadioItem value="size">Sort by Size</ContextMenuRadioItem>
+  </ContextMenuRadioGroup>
+</ContextMenuContent>
+```
+
+### ContextMenuLabel {Label Component}
+
+Non-interactive label for grouping and organizing menu items.
+
+**Purpose:** Provides section headers or labels to organize menu items into logical groups.
+
+**Interface:**
+
+```typescript
+interface ContextMenuLabelProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Label> {
+  children: React.ReactNode;
+  className?: string;
+  inset?: boolean; // Aligns with indented items
+}
+```
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuLabel>View Options</ContextMenuLabel>
+  <ContextMenuCheckboxItem checked={gridView} onCheckedChange={setGridView}>
+    Grid View
+  </ContextMenuCheckboxItem>
+  <ContextMenuCheckboxItem checked={listView} onCheckedChange={setListView}>
+    List View
+  </ContextMenuCheckboxItem>
+</ContextMenuContent>
+```
+
+### ContextMenuSeparator {Separator Component}
+
+Visual separator for organizing menu sections.
+
+**Purpose:** Creates visual separation between different groups of menu items.
+
+**Interface:**
+
+```typescript
+interface ContextMenuSeparatorProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Separator> {
+  className?: string;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuItem>Copy</ContextMenuItem>
+  <ContextMenuItem>Paste</ContextMenuItem>
+  <ContextMenuSeparator />
+  <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
+</ContextMenuContent>
+```
+
+### ContextMenuSub {Submenu Container}
+
+Container for creating nested submenus.
+
+**Purpose:** Enables hierarchical menu structures with nested submenu levels.
+
+**Interface:**
+
+```typescript
+interface ContextMenuSubProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.Sub> {
+  children: React.ReactNode; // Must contain ContextMenuSubTrigger and ContextMenuSubContent
+  onOpenChange?: (open: boolean) => void;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuItem>Copy</ContextMenuItem>
+  <ContextMenuSub>
+    <ContextMenuSubTrigger>Share</ContextMenuSubTrigger>
+    <ContextMenuSubContent>
+      <ContextMenuItem>Email</ContextMenuItem>
+      <ContextMenuItem>Copy Link</ContextMenuItem>
+      <ContextMenuItem>Social Media</ContextMenuItem>
+    </ContextMenuSubContent>
+  </ContextMenuSub>
+</ContextMenuContent>
+```
+
+### ContextMenuSubTrigger {Submenu Trigger}
+
+Trigger element for opening submenus.
+
+**Purpose:** Creates menu items that open nested submenus on hover or click.
+
+**Interface:**
+
+```typescript
+interface ContextMenuSubTriggerProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.SubTrigger> {
+  children: React.ReactNode;
+  className?: string;
+  inset?: boolean;
+  disabled?: boolean;
+}
+```
+
+### ContextMenuSubContent {Submenu Content}
+
+Content container for submenu items.
+
+**Purpose:** Provides the container for nested menu items with proper positioning relative to the parent menu.
+
+**Interface:**
+
+```typescript
+interface ContextMenuSubContentProps
+  extends React.ComponentProps<typeof ContextMenuPrimitive.SubContent> {
+  children: React.ReactNode;
+  className?: string;
+}
+```
+
+### ContextMenuShortcut {Shortcut Display}
+
+Display component for keyboard shortcuts in menu items.
+
+**Purpose:** Shows keyboard shortcuts alongside menu items for improved user experience and discoverability.
+
+**Interface:**
+
+```typescript
+interface ContextMenuShortcutProps extends React.ComponentProps<"span"> {
+  children: React.ReactNode; // Keyboard shortcut text
+  className?: string;
+}
+```
+
+**Usage Example:**
+
+```tsx
+<ContextMenuItem onSelect={() => handleCopy()}>
+  Copy
+  <ContextMenuShortcut>⌘C</ContextMenuShortcut>
+</ContextMenuItem>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+
+// Minimal required structure
+function BasicContextMenu() {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger className="block p-4 border rounded">
+        <p>Right-click me for options</p>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Edit</ContextMenuItem>
+        <ContextMenuItem>Duplicate</ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuCheckboxItem,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuShortcut,
+} from "@/components/ui/context-menu";
+import { Copy, Edit, Share, Trash, Download } from "lucide-react";
+
+// Complex usage with all features
+function AdvancedContextMenu() {
+  const [showHidden, setShowHidden] = useState(false);
+  const [viewMode, setViewMode] = useState("grid");
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger className="block w-full p-8 border rounded-lg">
+        <div className="space-y-2">
+          <h3 className="font-semibold">Project Files</h3>
+          <p className="text-sm text-muted-foreground">
+            Right-click for options
+          </p>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem>
+          <Edit />
+          Rename
+          <ContextMenuShortcut>F2</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem>
+          <Copy />
+          Copy
+          <ContextMenuShortcut>⌘C</ContextMenuShortcut>
+        </ContextMenuItem>
+
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <Share />
+            Share
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent>
+            <ContextMenuItem>Email Link</ContextMenuItem>
+            <ContextMenuItem>Copy Share URL</ContextMenuItem>
+            <ContextMenuItem>Social Media</ContextMenuItem>
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+
+        <ContextMenuItem>
+          <Download />
+          Download
+          <ContextMenuShortcut>⌘D</ContextMenuShortcut>
+        </ContextMenuItem>
+
+        <ContextMenuSeparator />
+
+        <ContextMenuLabel>View Options</ContextMenuLabel>
+        <ContextMenuCheckboxItem
+          checked={showHidden}
+          onCheckedChange={setShowHidden}
+        >
+          Show Hidden Files
+        </ContextMenuCheckboxItem>
+
+        <ContextMenuRadioGroup value={viewMode} onValueChange={setViewMode}>
+          <ContextMenuRadioItem value="grid">Grid View</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="list">List View</ContextMenuRadioItem>
+          <ContextMenuRadioItem value="detail">
+            Detail View
+          </ContextMenuRadioItem>
+        </ContextMenuRadioGroup>
+
+        <ContextMenuSeparator />
+
+        <ContextMenuItem variant="destructive">
+          <Trash />
+          Delete
+          <ContextMenuShortcut>⌫</ContextMenuShortcut>
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+### Common Variations
+
+#### File Manager Context Menu
+
+```tsx
+function FileManagerContextMenu({ file }) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div className="p-2 hover:bg-muted rounded cursor-pointer">
+          <FileIcon file={file} />
+          <span>{file.name}</span>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onSelect={() => openFile(file)}>
+          <FileText />
+          Open
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => openFileWith(file)}>
+          Open With...
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => copyFile(file)}>
+          <Copy />
+          Copy
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => cutFile(file)}>
+          <Scissors />
+          Cut
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => renameFile(file)}>
+          <Edit />
+          Rename
+        </ContextMenuItem>
+        <ContextMenuItem
+          variant="destructive"
+          onSelect={() => deleteFile(file)}
+        >
+          <Trash />
+          Delete
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+#### Text Editor Context Menu
+
+```tsx
+function TextEditorContextMenu({ selectedText, canPaste }) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <textarea className="w-full h-40 p-2 border rounded" />
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem disabled={!selectedText}>
+          <Copy />
+          Copy
+          <ContextMenuShortcut>⌘C</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!selectedText}>
+          <Scissors />
+          Cut
+          <ContextMenuShortcut>⌘X</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!canPaste}>
+          <Clipboard />
+          Paste
+          <ContextMenuShortcut>⌘V</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem>
+          <RotateCcw />
+          Undo
+          <ContextMenuShortcut>⌘Z</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem>
+          <RotateCw />
+          Redo
+          <ContextMenuShortcut>⌘⇧Z</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem>
+          <Search />
+          Find & Replace
+          <ContextMenuShortcut>⌘F</ContextMenuShortcut>
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The ContextMenu component group follows a provider-consumer pattern:
+
+1. **ContextMenu** acts as the root provider, managing:
+
+   - Menu open/closed state
+   - Positioning calculations
+   - Keyboard navigation state
+   - Event handling coordination
+
+2. **ContextMenuTrigger** registers event listeners and communicates trigger events to the provider
+
+3. **ContextMenuContent** receives positioning and visibility state from the provider
+
+4. **Menu Items** receive navigation context and communicate selection events up through callbacks
+
+### Context Sharing
+
+The component group shares several contexts:
+
+- **Menu State**: Open/closed state managed by ContextMenu
+- **Positioning Context**: Calculated positions for content and submenus
+- **Navigation Context**: Keyboard navigation and focus management
+- **Selection Context**: For radio groups and checkbox states
+
+### Event Handling
+
+Events flow through the component hierarchy:
+
+1. **Trigger Events**: Right-click or keyboard activation on ContextMenuTrigger
+2. **Selection Events**: Item clicks bubble up through onSelect callbacks
+3. **State Changes**: Checkbox and radio item changes propagate through dedicated handlers
+4. **Navigation Events**: Keyboard navigation handled by the root context menu
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Provide relevant actions**: Only include context menu items that are applicable to the triggered element
+- **Group related actions**: Use separators and labels to organize menu items logically
+- **Include keyboard shortcuts**: Display shortcuts when available to improve user efficiency
+- **Handle permissions**: Disable or hide menu items based on user permissions or current state
+- **Keep menus concise**: Avoid overly long context menus that require scrolling
+- **Use consistent icons**: Include meaningful icons that enhance understanding of actions
+
+### Accessibility
+
+- Context menus automatically handle keyboard navigation with arrow keys
+- Proper ARIA attributes are included for screen reader support
+- Focus management ensures keyboard users can navigate efficiently
+- Escape key closes menus as expected
+- Items can be disabled to prevent invalid actions
+- Proper role and aria-label attributes are applied automatically
+
+### Performance
+
+- Context menus use portal rendering to avoid z-index issues
+- Animations are optimized with CSS transforms and opacity
+- Submenu positioning is calculated efficiently to prevent layout thrashing
+- Event listeners are properly cleaned up when components unmount
+- Menu content is only rendered when the menu is open
+
+## Common Patterns
+
+### Pattern 1: Conditional Menu Items
+
+```tsx
+function ConditionalContextMenu({ user, item, permissions }) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>Content</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>View Details</ContextMenuItem>
+
+        {permissions.canEdit && (
+          <ContextMenuItem>
+            <Edit />
+            Edit
+          </ContextMenuItem>
+        )}
+
+        {permissions.canShare && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>Share</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem>Email</ContextMenuItem>
+              <ContextMenuItem>Copy Link</ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
+
+        {permissions.canDelete && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem variant="destructive">
+              <Trash />
+              Delete
+            </ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+### Pattern 2: Multi-Selection Context Menu
+
+```tsx
+function MultiSelectionContextMenu({ selectedItems }) {
+  const hasSelection = selectedItems.length > 0;
+  const isMultipleSelection = selectedItems.length > 1;
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>Selectable content area</ContextMenuTrigger>
+      <ContextMenuContent>
+        {hasSelection ? (
+          <>
+            <ContextMenuLabel>
+              {selectedItems.length} item{isMultipleSelection ? "s" : ""}{" "}
+              selected
+            </ContextMenuLabel>
+            <ContextMenuSeparator />
+            <ContextMenuItem>
+              <Copy />
+              Copy {isMultipleSelection ? "Items" : "Item"}
+            </ContextMenuItem>
+            <ContextMenuItem>
+              <Download />
+              Download {isMultipleSelection ? "All" : ""}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem variant="destructive">
+              <Trash />
+              Delete {isMultipleSelection ? "Items" : "Item"}
+            </ContextMenuItem>
+          </>
+        ) : (
+          <>
+            <ContextMenuItem>Select All</ContextMenuItem>
+            <ContextMenuItem>Refresh</ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```
+
+### Pattern 3: Dynamic Submenu Loading
+
+```tsx
+function DynamicSubmenuContextMenu({ item }) {
+  const [shareOptions, setShareOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadShareOptions = async () => {
+    setLoading(true);
+    try {
+      const options = await fetchShareOptions(item.id);
+      setShareOptions(options);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>Content</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Edit</ContextMenuItem>
+        <ContextMenuSub onOpenChange={(open) => open && loadShareOptions()}>
+          <ContextMenuSubTrigger disabled={loading}>
+            <Share />
+            Share {loading && "..."}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent>
+            {loading ? (
+              <ContextMenuLabel>Loading options...</ContextMenuLabel>
+            ) : (
+              shareOptions.map((option) => (
+                <ContextMenuItem
+                  key={option.id}
+                  onSelect={() => shareWith(option)}
+                >
+                  {option.icon}
+                  {option.name}
+                </ContextMenuItem>
+              ))
+            )}
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+        <ContextMenuSeparator />
+        <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+```

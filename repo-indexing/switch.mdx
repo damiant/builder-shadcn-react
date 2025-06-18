@@ -1,0 +1,312 @@
+# Switch Component
+
+## Overview
+
+### Purpose
+
+Use this component to generate switch toggle functionality for boolean states and settings.
+
+### When to Use
+
+- **Settings and Preferences**: Enable/disable application features, notification settings, or user preferences
+- **Form Controls**: Toggle boolean options within forms (e.g., "Remember me", "Enable notifications")
+- **Feature Toggles**: Turn application features on or off in administrative interfaces
+- **Status Controls**: Toggle operational states like "Active/Inactive" or "Public/Private"
+- **Accessibility Options**: Control accessibility features like high contrast mode or reduced motion
+
+### Architecture
+
+**No Coupling**: This is a standalone component that works independently without requiring other components.
+
+The Switch component is built on top of Radix UI's Switch primitive, providing a controlled toggle interface with built-in accessibility features, keyboard navigation, and state management.
+
+## Components
+
+### Switch
+
+**Purpose:** A toggle control for binary choices, providing visual feedback for on/off states with smooth transitions and accessibility support.
+
+**Interface:**
+
+```typescript
+interface SwitchProps
+  extends React.ComponentProps<typeof SwitchPrimitive.Root> {
+  className?: string;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  required?: boolean;
+  name?: string;
+  value?: string;
+  id?: string;
+}
+```
+
+**Key Props:**
+
+- `checked`: Controlled state - whether the switch is on (true) or off (false)
+- `defaultChecked`: Uncontrolled default state for the switch
+- `onCheckedChange`: Callback fired when the switch state changes
+- `disabled`: Prevents user interaction and applies disabled styling
+- `className`: Additional CSS classes for customization
+
+**Usage Example:**
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+
+function SettingsExample() {
+  const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch
+        id="notifications"
+        checked={notificationsEnabled}
+        onCheckedChange={setNotificationsEnabled}
+      />
+      <label htmlFor="notifications" className="text-sm font-medium">
+        Enable notifications
+      </label>
+    </div>
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+
+// Uncontrolled switch with default state
+function BasicExample() {
+  return (
+    <Switch
+      defaultChecked={true}
+      onCheckedChange={(checked) => console.log("Switch state:", checked)}
+    />
+  );
+}
+```
+
+### Controlled Usage
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+
+// Controlled switch with external state management
+function ControlledExample() {
+  const [isEnabled, setIsEnabled] = React.useState(false);
+
+  return (
+    <Switch
+      checked={isEnabled}
+      onCheckedChange={setIsEnabled}
+      disabled={false}
+    />
+  );
+}
+```
+
+### Form Integration
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+// Switch within a form with proper labeling
+function FormExample() {
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch id="marketing-emails" name="marketingEmails" />
+      <Label htmlFor="marketing-emails">
+        I want to receive marketing emails
+      </Label>
+    </div>
+  );
+}
+```
+
+## Common Patterns
+
+### Settings Panel
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+function SettingsPanel() {
+  const [settings, setSettings] = React.useState({
+    notifications: true,
+    darkMode: false,
+    autoSave: true,
+  });
+
+  const updateSetting = (key: keyof typeof settings) => (checked: boolean) => {
+    setSettings((prev) => ({ ...prev, [key]: checked }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label htmlFor="notifications">Push Notifications</Label>
+        <Switch
+          id="notifications"
+          checked={settings.notifications}
+          onCheckedChange={updateSetting("notifications")}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="dark-mode">Dark Mode</Label>
+        <Switch
+          id="dark-mode"
+          checked={settings.darkMode}
+          onCheckedChange={updateSetting("darkMode")}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="auto-save">Auto Save</Label>
+        <Switch
+          id="auto-save"
+          checked={settings.autoSave}
+          onCheckedChange={updateSetting("autoSave")}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### Feature Toggle with Status
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+
+function FeatureToggle() {
+  const [isActive, setIsActive] = React.useState(false);
+
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg">
+      <div className="space-y-1">
+        <h3 className="font-medium">Beta Feature</h3>
+        <p className="text-sm text-muted-foreground">
+          Enable new experimental functionality
+        </p>
+      </div>
+      <div className="flex items-center space-x-2">
+        <Badge variant={isActive ? "default" : "secondary"}>
+          {isActive ? "Active" : "Inactive"}
+        </Badge>
+        <Switch checked={isActive} onCheckedChange={setIsActive} />
+      </div>
+    </div>
+  );
+}
+```
+
+### Conditional Content Toggle
+
+```tsx
+import { Switch } from "@/components/ui/switch";
+
+function ConditionalContent() {
+  const [showAdvanced, setShowAdvanced] = React.useState(false);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="advanced-options"
+          checked={showAdvanced}
+          onCheckedChange={setShowAdvanced}
+        />
+        <Label htmlFor="advanced-options">Show advanced options</Label>
+      </div>
+
+      {showAdvanced && (
+        <div className="ml-6 p-4 border rounded-lg bg-muted/50">
+          <h4 className="font-medium mb-2">Advanced Settings</h4>
+          <p className="text-sm text-muted-foreground">
+            Additional configuration options appear here when enabled.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always provide labels**: Associate switches with descriptive labels using the `Label` component or proper `aria-label` attributes
+- **Use for binary choices**: Switches work best for true/false, on/off states rather than multi-option selections
+- **Provide immediate feedback**: Changes should take effect immediately without requiring a separate "Save" action
+- **Group related switches**: When presenting multiple switches, group related options together logically
+- **Consider loading states**: For switches that trigger async operations, consider showing loading states or temporary disabled states
+
+### Accessibility
+
+- **Keyboard Navigation**: The switch supports keyboard navigation with Space and Enter keys
+- **Screen Reader Support**: Built-in ARIA attributes communicate the switch state to assistive technologies
+- **Focus Management**: Proper focus indicators are provided for keyboard navigation
+- **State Communication**: The current state (checked/unchecked) is properly announced to screen readers
+- **Label Association**: Always associate switches with descriptive labels using `htmlFor` and `id` attributes
+
+### Performance
+
+- **Debouncing**: For switches that trigger expensive operations, consider debouncing the `onCheckedChange` callback
+- **State Management**: Use local state for simple toggles, external state management for complex scenarios
+- **Immediate Updates**: Update the UI immediately while background operations complete asynchronously
+
+## State Management Patterns
+
+### Local State
+
+```tsx
+// Simple local state for component-level toggles
+const [enabled, setEnabled] = React.useState(false);
+
+<Switch checked={enabled} onCheckedChange={setEnabled} />;
+```
+
+### Form State
+
+```tsx
+// Integration with form libraries like react-hook-form
+import { useController } from "react-hook-form";
+
+function FormSwitch({ name, control }) {
+  const { field } = useController({ name, control });
+
+  return <Switch checked={field.value} onCheckedChange={field.onChange} />;
+}
+```
+
+### Global State
+
+```tsx
+// Integration with global state management
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+
+function GlobalSwitch() {
+  const isEnabled = useAppSelector((state) => state.settings.notifications);
+  const dispatch = useAppDispatch();
+
+  return (
+    <Switch
+      checked={isEnabled}
+      onCheckedChange={(checked) =>
+        dispatch(updateSetting({ notifications: checked }))
+      }
+    />
+  );
+}
+```

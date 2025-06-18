@@ -1,0 +1,387 @@
+# Avatar Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate avatar functionality
+
+### When to Use
+
+Avatar components are essential for representing users, profiles, or entities in a visual and accessible way. Use avatars when you need to:
+
+- Display user profile pictures in headers, navigation, or content areas
+- Create user identification elements in comments, posts, or social feeds
+- Show placeholder representations when user images are unavailable
+- Build contact lists, team member displays, or user directories
+- Provide visual identity in chat interfaces or collaboration tools
+- Display brand logos or entity representations in listings
+
+### Architecture
+
+**Moderate Coupling**: The Avatar component group follows a hierarchical composition pattern where components are designed to work together in a specific structure. The root Avatar component provides the container context, while AvatarImage and AvatarFallback components handle the display logic with built-in fallback behavior.
+
+### Component Interdependencies
+
+The Avatar component group uses a structured composition pattern:
+
+- **Avatar** serves as the root container that provides sizing, shape, and layout context
+- **AvatarImage** handles image display with automatic loading states
+- **AvatarFallback** provides backup content when images fail to load or are unavailable
+- Components use Radix UI primitives for accessibility and behavior management
+- Built-in fallback mechanism automatically shows AvatarFallback when AvatarImage fails
+
+## Components
+
+### Avatar {Primary Component}
+
+The foundational container component that provides the base styling, sizing, and shape for all avatar content.
+
+**Purpose:** Creates a circular container with consistent sizing and overflow handling that serves as the foundation for avatar images and fallback content.
+
+**Interface:**
+
+```typescript
+interface AvatarProps
+  extends React.ComponentProps<typeof AvatarPrimitive.Root> {
+  className?: string;
+  children: React.ReactNode; // Typically AvatarImage and AvatarFallback
+}
+```
+
+**Provides:** Base avatar styling with circular shape, consistent sizing (32px default), overflow hidden, and Radix UI accessibility features
+
+**Usage Example:**
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+function UserAvatar() {
+  return (
+    <Avatar>
+      <AvatarImage src="/user-photo.jpg" alt="User name" />
+      <AvatarFallback>UN</AvatarFallback>
+    </Avatar>
+  );
+}
+```
+
+### AvatarImage {Content Component}
+
+Handles image display with built-in loading states and automatic fallback behavior.
+
+**Purpose:** Displays the primary avatar image with aspect ratio preservation and automatic fallback when the image fails to load.
+
+**Interface:**
+
+```typescript
+interface AvatarImageProps
+  extends React.ComponentProps<typeof AvatarPrimitive.Image> {
+  className?: string;
+  src: string;
+  alt: string; // Required for accessibility
+}
+```
+
+**Context Dependencies:** Must be used within an Avatar component for proper styling and behavior
+**Fallback Behavior:** Automatically triggers AvatarFallback display when image loading fails
+
+**Usage Example:**
+
+```tsx
+// Must be used within Avatar component
+<Avatar>
+  <AvatarImage
+    src="https://example.com/user-photo.jpg"
+    alt="John Doe's profile picture"
+  />
+  <AvatarFallback>JD</AvatarFallback>
+</Avatar>
+```
+
+### AvatarFallback {Fallback Component}
+
+Provides backup content when the primary image is unavailable or fails to load.
+
+**Purpose:** Displays alternative content (typically initials or icons) with consistent styling when the avatar image cannot be shown.
+
+**Interface:**
+
+```typescript
+interface AvatarFallbackProps
+  extends React.ComponentProps<typeof AvatarPrimitive.Fallback> {
+  className?: string;
+  children: React.ReactNode; // Typically text initials or icons
+}
+```
+
+**Context Dependencies:** Must be used within an Avatar component and works in conjunction with AvatarImage
+**Display Logic:** Only shown when AvatarImage fails to load or is not provided
+
+**Usage Example:**
+
+```tsx
+// Displays when AvatarImage fails or is unavailable
+<Avatar>
+  <AvatarImage src="/broken-image.jpg" alt="User" />
+  <AvatarFallback>
+    <User className="h-4 w-4" />
+  </AvatarFallback>
+</Avatar>
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+// Standard user avatar with image and text fallback
+function UserProfile({ user }) {
+  return (
+    <Avatar>
+      <AvatarImage src={user.avatarUrl} alt={`${user.name}'s avatar`} />
+      <AvatarFallback>
+        {user.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+```
+
+### Advanced Usage
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User } from "lucide-react";
+
+// Avatar with custom sizing and icon fallback
+function TeamMemberAvatar({ member, size = "default" }) {
+  const sizeClasses = {
+    sm: "size-6",
+    default: "size-8",
+    lg: "size-12",
+    xl: "size-16",
+  };
+
+  return (
+    <Avatar className={sizeClasses[size]}>
+      <AvatarImage
+        src={member.photo}
+        alt={`${member.name}'s profile picture`}
+      />
+      <AvatarFallback className="bg-primary text-primary-foreground">
+        {member.initials || <User className="h-1/2 w-1/2" />}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+```
+
+### Common Variations
+
+#### Initials Fallback
+
+```tsx
+function InitialsAvatar({ name, imageUrl }) {
+  const getInitials = (fullName) => {
+    return fullName
+      .split(" ")
+      .map((name) => name[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  return (
+    <Avatar>
+      <AvatarImage src={imageUrl} alt={`${name}'s avatar`} />
+      <AvatarFallback className="bg-blue-500 text-white">
+        {getInitials(name)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+```
+
+#### Icon Fallback
+
+```tsx
+import { Building, User } from "lucide-react";
+
+function EntityAvatar({ entity, type = "user" }) {
+  const FallbackIcon = type === "user" ? User : Building;
+
+  return (
+    <Avatar>
+      <AvatarImage src={entity.logoUrl} alt={`${entity.name} avatar`} />
+      <AvatarFallback>
+        <FallbackIcon className="h-1/2 w-1/2" />
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+```
+
+#### Different Sizes
+
+```tsx
+function AvatarSizes() {
+  return (
+    <div className="flex items-center gap-4">
+      {/* Small avatar */}
+      <Avatar className="size-6">
+        <AvatarImage src="/user.jpg" alt="Small avatar" />
+        <AvatarFallback className="text-xs">SM</AvatarFallback>
+      </Avatar>
+
+      {/* Default avatar */}
+      <Avatar>
+        <AvatarImage src="/user.jpg" alt="Default avatar" />
+        <AvatarFallback>DF</AvatarFallback>
+      </Avatar>
+
+      {/* Large avatar */}
+      <Avatar className="size-16">
+        <AvatarImage src="/user.jpg" alt="Large avatar" />
+        <AvatarFallback className="text-lg">LG</AvatarFallback>
+      </Avatar>
+    </div>
+  );
+}
+```
+
+## Component Relationships
+
+### Data Flow
+
+The Avatar component group follows a progressive enhancement pattern:
+
+- Avatar provides the container context and base styling
+- AvatarImage attempts to load and display the primary image
+- AvatarFallback automatically displays when AvatarImage fails or is unavailable
+- Radix UI primitives handle the loading states and accessibility features
+
+### Fallback Mechanism
+
+The components work together to provide seamless fallback behavior:
+
+- When AvatarImage src loads successfully, it displays the image
+- When AvatarImage fails to load, AvatarFallback content is automatically shown
+- The fallback is also displayed during image loading states
+- No manual state management is required for the fallback logic
+
+### Accessibility Integration
+
+- Avatar component provides proper semantic structure with role attributes
+- AvatarImage requires alt text for screen readers
+- AvatarFallback provides textual representation when images aren't available
+- Keyboard navigation and focus management are handled by Radix UI primitives
+
+## Best Practices
+
+### Usage Guidelines
+
+- **Always provide both image and fallback**: Include both AvatarImage and AvatarFallback for robust user experience
+- **Use meaningful alt text**: Provide descriptive alt attributes for AvatarImage to support screen readers
+- **Consider initials for fallbacks**: Use user initials as fallback text for personal avatars
+- **Maintain consistent sizing**: Use the same avatar size throughout related interface elements
+
+### Accessibility
+
+- Always include alt text on AvatarImage for screen reader users
+- Ensure fallback content is meaningful and represents the user or entity
+- Use appropriate contrast ratios for fallback text and background colors
+- Consider providing additional context for icon-only fallbacks
+
+### Performance
+
+- Optimize avatar images for the display size (typically small, square images)
+- Consider using image optimization services or next/image for better loading performance
+- Use appropriate image formats (WebP where supported, with fallbacks)
+- Implement lazy loading for avatar lists or grids
+
+## Common Patterns
+
+### Pattern 1: User Profile Display
+
+```tsx
+// Ideal for user profiles, navigation bars, or content attribution
+function UserProfileAvatar({ user }) {
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar>
+        <AvatarImage
+          src={user.profilePicture}
+          alt={`${user.displayName}'s profile picture`}
+        />
+        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-600 text-white">
+          {user.displayName.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div>
+        <p className="font-medium">{user.displayName}</p>
+        <p className="text-sm text-muted-foreground">@{user.username}</p>
+      </div>
+    </div>
+  );
+}
+```
+
+### Pattern 2: Avatar Group/Stack
+
+```tsx
+// Perfect for showing multiple users or team members
+function AvatarGroup({ users, max = 3 }) {
+  const displayUsers = users.slice(0, max);
+  const remainingCount = users.length - max;
+
+  return (
+    <div className="flex -space-x-2">
+      {displayUsers.map((user, index) => (
+        <Avatar key={user.id} className="border-2 border-background">
+          <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+      ))}
+      {remainingCount > 0 && (
+        <Avatar className="border-2 border-background">
+          <AvatarFallback>+{remainingCount}</AvatarFallback>
+        </Avatar>
+      )}
+    </div>
+  );
+}
+```
+
+### Pattern 3: Status Indicator Avatar
+
+```tsx
+// Excellent for showing online status or activity states
+function StatusAvatar({ user, status = "offline" }) {
+  const statusColors = {
+    online: "bg-green-500",
+    away: "bg-yellow-500",
+    busy: "bg-red-500",
+    offline: "bg-gray-400",
+  };
+
+  return (
+    <div className="relative">
+      <Avatar>
+        <AvatarImage src={user.avatar} alt={user.name} />
+        <AvatarFallback>{user.initials}</AvatarFallback>
+      </Avatar>
+      <div
+        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${statusColors[status]}`}
+        aria-label={`${user.name} is ${status}`}
+      />
+    </div>
+  );
+}
+```

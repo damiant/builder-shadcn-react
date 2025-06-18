@@ -1,0 +1,440 @@
+# Checkbox Components
+
+## Overview
+
+### Purpose
+
+Use this component to generate checkbox functionality
+
+### When to Use
+
+The Checkbox component should be used when you need to:
+
+- Allow users to select one or multiple options from a set
+- Create toggle switches for boolean settings or preferences
+- Implement "Select All" functionality in data tables or lists
+- Build forms that require user consent or acknowledgment
+- Create filter interfaces where users can select multiple criteria
+- Implement accessibility-compliant checkbox controls with proper ARIA support
+
+### Architecture
+
+**No Coupling**: This is a standalone component that can be used independently without requiring other components or shared context.
+
+The Checkbox component is built on top of Radix UI's checkbox primitive, providing a fully accessible and customizable checkbox implementation. It handles all the complex accessibility requirements including keyboard navigation, screen reader support, and proper ARIA attributes.
+
+## Components
+
+### Checkbox
+
+**Purpose:** Provides a styled, accessible checkbox input control that can be in checked, unchecked, or indeterminate states.
+
+**Interface:**
+
+```typescript
+interface CheckboxProps
+  extends React.ComponentProps<typeof CheckboxPrimitive.Root> {
+  className?: string;
+  // Inherited from Radix UI CheckboxPrimitive.Root:
+  asChild?: boolean;
+  defaultChecked?: boolean | "indeterminate";
+  checked?: boolean | "indeterminate";
+  onCheckedChange?: (checked: boolean | "indeterminate") => void;
+  disabled?: boolean;
+  required?: boolean;
+  name?: string;
+  value?: string;
+}
+```
+
+**Usage Example:**
+
+```tsx
+import { Checkbox } from "@/components/ui/checkbox";
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <Checkbox
+      checked={checked}
+      onCheckedChange={setChecked}
+      className="data-[state=checked]:bg-blue-600"
+    />
+  );
+}
+```
+
+## Integration Patterns
+
+### Basic Usage
+
+```tsx
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Simple checkbox
+function BasicExample() {
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox id="terms" />
+      <label
+        htmlFor="terms"
+        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        Accept terms and conditions
+      </label>
+    </div>
+  );
+}
+```
+
+### Controlled Usage
+
+```tsx
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+function ControlledExample() {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox
+        id="newsletter"
+        checked={checked}
+        onCheckedChange={setChecked}
+      />
+      <label htmlFor="newsletter" className="text-sm">
+        Subscribe to newsletter
+      </label>
+    </div>
+  );
+}
+```
+
+### Form Integration
+
+```tsx
+import { useForm } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+function FormExample() {
+  const form = useForm({
+    defaultValues: {
+      marketing: false,
+      notifications: true,
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(console.log)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="marketing"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Marketing communications</FormLabel>
+                <FormDescription>
+                  Receive emails about new products, features, and more.
+                </FormDescription>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notifications"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Push notifications</FormLabel>
+                <FormDescription>
+                  Get notified about important updates and messages.
+                </FormDescription>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  );
+}
+```
+
+### Indeterminate State
+
+```tsx
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+function IndeterminateExample() {
+  const [items, setItems] = useState([
+    { id: "1", label: "Item 1", checked: false },
+    { id: "2", label: "Item 2", checked: true },
+    { id: "3", label: "Item 3", checked: false },
+  ]);
+
+  const checkedItems = items.filter((item) => item.checked);
+  const isAllChecked = checkedItems.length === items.length;
+  const isIndeterminate =
+    checkedItems.length > 0 && checkedItems.length < items.length;
+
+  const handleSelectAll = (checked: boolean | "indeterminate") => {
+    if (checked === "indeterminate") return;
+    setItems(items.map((item) => ({ ...item, checked })));
+  };
+
+  const handleItemCheck = (id: string, checked: boolean) => {
+    setItems(
+      items.map((item) => (item.id === id ? { ...item, checked } : item)),
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          checked={
+            isAllChecked ? true : isIndeterminate ? "indeterminate" : false
+          }
+          onCheckedChange={handleSelectAll}
+          id="select-all"
+        />
+        <label htmlFor="select-all" className="font-medium">
+          Select All ({checkedItems.length}/{items.length})
+        </label>
+      </div>
+
+      <div className="ml-6 space-y-2">
+        {items.map((item) => (
+          <div key={item.id} className="flex items-center space-x-2">
+            <Checkbox
+              checked={item.checked}
+              onCheckedChange={(checked) =>
+                handleItemCheck(item.id, checked as boolean)
+              }
+              id={item.id}
+            />
+            <label htmlFor={item.id} className="text-sm">
+              {item.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Table Integration
+
+```tsx
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+function TableExample() {
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  const data = [
+    { id: "1", name: "John Doe", email: "john@example.com" },
+    { id: "2", name: "Jane Smith", email: "jane@example.com" },
+    { id: "3", name: "Bob Johnson", email: "bob@example.com" },
+  ];
+
+  const isAllSelected = selectedRows.length === data.length;
+  const isIndeterminate =
+    selectedRows.length > 0 && selectedRows.length < data.length;
+
+  const handleSelectAll = (checked: boolean | "indeterminate") => {
+    if (checked === "indeterminate") return;
+    setSelectedRows(checked ? data.map((item) => item.id) : []);
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedRows((prev) =>
+      checked ? [...prev, id] : prev.filter((rowId) => rowId !== id),
+    );
+  };
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-12">
+            <Checkbox
+              checked={
+                isAllSelected ? true : isIndeterminate ? "indeterminate" : false
+              }
+              onCheckedChange={handleSelectAll}
+            />
+          </TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((row) => (
+          <TableRow key={row.id}>
+            <TableCell>
+              <Checkbox
+                checked={selectedRows.includes(row.id)}
+                onCheckedChange={(checked) =>
+                  handleSelectRow(row.id, checked as boolean)
+                }
+              />
+            </TableCell>
+            <TableCell>{row.name}</TableCell>
+            <TableCell>{row.email}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+```
+
+## Best Practices
+
+### Usage Guidelines
+
+- Always provide a descriptive label for accessibility, either through a `<label>` element or `aria-label` attribute
+- Use controlled components when the checkbox state needs to be managed by parent components or forms
+- Implement proper error handling and validation when using checkboxes in forms
+- Consider using the indeterminate state for parent checkboxes that control multiple child checkboxes
+- Group related checkboxes using fieldset and legend elements for better semantic structure
+
+### Accessibility
+
+- The component automatically includes proper ARIA attributes (`role="checkbox"`, `aria-checked`)
+- Supports keyboard navigation (Space key to toggle, Tab to focus)
+- Uses proper color contrast ratios for different states (checked, unchecked, disabled)
+- Includes focus indicators that meet WCAG guidelines
+- Associates with labels through `htmlFor` attributes or wrapping label elements
+- Announces state changes to screen readers
+
+### Performance
+
+- Use React's `useState` or form libraries like React Hook Form for efficient state management
+- Avoid unnecessary re-renders by memoizing checkbox components when dealing with large lists
+- Consider virtualization for tables with many rows containing checkboxes
+- Use `defaultChecked` for uncontrolled components to reduce unnecessary state updates
+
+## Common Patterns
+
+### Pattern 1: Settings Panel
+
+```tsx
+// Common pattern for user preferences and settings
+function SettingsPanel() {
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    pushNotifications: false,
+    marketingEmails: false,
+    securityAlerts: true,
+  });
+
+  const updateSetting =
+    (key: keyof typeof settings) => (checked: boolean | "indeterminate") => {
+      if (checked === "indeterminate") return;
+      setSettings((prev) => ({ ...prev, [key]: checked }));
+    };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Notification Preferences</h3>
+
+      {Object.entries(settings).map(([key, value]) => (
+        <div key={key} className="flex items-center space-x-2">
+          <Checkbox
+            id={key}
+            checked={value}
+            onCheckedChange={updateSetting(key as keyof typeof settings)}
+          />
+          <label htmlFor={key} className="text-sm">
+            {key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase())}
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Pattern 2: Multi-Select Filter
+
+```tsx
+// Common pattern for filtering interfaces
+function FilterCheckboxes() {
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  const filters = [
+    { id: "category-1", label: "Electronics" },
+    { id: "category-2", label: "Clothing" },
+    { id: "category-3", label: "Books" },
+    { id: "price-low", label: "Under $25" },
+    { id: "price-high", label: "Over $100" },
+  ];
+
+  const handleFilterChange = (filterId: string, checked: boolean) => {
+    setSelectedFilters((prev) =>
+      checked ? [...prev, filterId] : prev.filter((id) => id !== filterId),
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      <h4 className="font-medium">Filters</h4>
+      {filters.map((filter) => (
+        <div key={filter.id} className="flex items-center space-x-2">
+          <Checkbox
+            id={filter.id}
+            checked={selectedFilters.includes(filter.id)}
+            onCheckedChange={(checked) =>
+              handleFilterChange(filter.id, checked as boolean)
+            }
+          />
+          <label htmlFor={filter.id} className="text-sm">
+            {filter.label}
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
